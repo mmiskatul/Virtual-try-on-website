@@ -1,26 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { z } from "zod";
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react";
+
 import { products, type Gender, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
-
-const searchSchema = z.object({
-  product: z.string().optional(),
-});
-
-export const Route = createFileRoute("/try-on")({
-  validateSearch: searchSchema,
-  head: () => ({
-    meta: [
-      { title: "Virtual Try-On Studio — AI Fit Studio" },
-      { name: "description", content: "Upload your photo and try outfits on virtually with AI." },
-      { property: "og:title", content: "Virtual Try-On Studio" },
-      { property: "og:description", content: "Upload, choose an outfit, and preview the look instantly." },
-    ],
-  }),
-  component: TryOn,
-});
 
 const LOADING_STEPS = [
   "Analyzing your photo",
@@ -29,13 +14,28 @@ const LOADING_STEPS = [
   "Generating final preview",
 ];
 
-function TryOn() {
-  const { product: initialId } = Route.useSearch();
-  const navigate = useNavigate();
+export default function TryOn() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-[60vh] place-items-center">
+          <p className="text-sm text-muted-foreground">Loading try-on studio...</p>
+        </div>
+      }
+    >
+      <TryOnContent />
+    </Suspense>
+  );
+}
+
+function TryOnContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
+  const initialId = searchParams.get("product");
   const [photo, setPhoto] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(
-    initialId ? products.find((p) => p.id === initialId) ?? null : null,
+    initialId ? (products.find((p) => p.id === initialId) ?? null) : null,
   );
   const [genderFilter, setGenderFilter] = useState<"all" | Gender>("all");
   const [catFilter, setCatFilter] = useState<string>("all");
@@ -44,11 +44,16 @@ function TryOn() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // restore photo from session
   useEffect(() => {
     const p = sessionStorage.getItem("tryon:photo");
     if (p) setPhoto(p);
   }, []);
+
+  useEffect(() => {
+    if (!initialId) return;
+    const product = products.find((p) => p.id === initialId);
+    if (product) setSelected(product);
+  }, [initialId]);
 
   const cats = ["all", ...Array.from(new Set(products.map((p) => p.category)))];
   const filtered = products.filter(
@@ -96,14 +101,16 @@ function TryOn() {
     }
     sessionStorage.setItem("tryon:product", selected.id);
     await new Promise((r) => setTimeout(r, 400));
-    navigate({ to: "/result" });
+    router.push("/result");
   }
 
   return (
     <div className="bg-background pb-28 md:pb-12">
       <section className="bg-gradient-cream">
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 md:py-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">Try-On Studio</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+            Try-On Studio
+          </p>
           <h1 className="mt-3 font-display text-4xl text-charcoal sm:text-5xl">Create your look</h1>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
             Add a clear full-body photo, pick an outfit, and we'll generate a preview in seconds.
@@ -112,7 +119,6 @@ function TryOn() {
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_1.4fr]">
-        {/* PHOTO UPLOAD */}
         <div className="space-y-5">
           <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
             <div className="mb-4 flex items-center justify-between">
@@ -129,7 +135,11 @@ function TryOn() {
 
             {photo ? (
               <div className="overflow-hidden rounded-2xl border border-border bg-cream">
-                <img src={photo} alt="Uploaded preview" className="max-h-[500px] w-full object-contain" />
+                <img
+                  src={photo}
+                  alt="Uploaded preview"
+                  className="max-h-[500px] w-full object-contain"
+                />
               </div>
             ) : (
               <label
@@ -144,15 +154,21 @@ function TryOn() {
                   handleFile(e.dataTransfer.files?.[0]);
                 }}
                 className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition ${
-                  dragOver ? "border-charcoal bg-cream" : "border-border bg-cream/40 hover:border-charcoal/40"
+                  dragOver
+                    ? "border-charcoal bg-cream"
+                    : "border-border bg-cream/40 hover:border-charcoal/40"
                 }`}
               >
                 <span className="grid h-14 w-14 place-items-center rounded-full bg-gradient-gold text-charcoal">
                   <Upload className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Upload a clear full-body photo</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Drag & drop, or click to browse</p>
+                  <p className="text-sm font-medium text-foreground">
+                    Upload a clear full-body photo
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Drag & drop, or click to browse
+                  </p>
                 </div>
                 <input
                   ref={fileRef}
@@ -165,7 +181,11 @@ function TryOn() {
             )}
 
             <ul className="mt-5 space-y-2">
-              {["Use a front-facing photo", "Good, even lighting", "Avoid covered or cropped body"].map((t) => (
+              {[
+                "Use a front-facing photo",
+                "Good, even lighting",
+                "Avoid covered or cropped body",
+              ].map((t) => (
                 <li key={t} className="flex items-start gap-2 text-xs text-muted-foreground">
                   <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" />
                   {t}
@@ -180,16 +200,21 @@ function TryOn() {
                 Selected outfit
               </p>
               <div className="flex items-center gap-4">
-                <img src={selected.image} alt={selected.name} className="h-20 w-16 rounded-xl object-cover" />
+                <img
+                  src={selected.image}
+                  alt={selected.name}
+                  className="h-20 w-16 rounded-xl object-cover"
+                />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-foreground">{selected.name}</p>
-                  <p className="text-xs text-muted-foreground">{selected.category} · ${selected.price}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {selected.category} - ${selected.price}
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Desktop Generate button */}
           <button
             onClick={generate}
             className="hidden w-full items-center justify-center gap-2 rounded-full bg-charcoal py-4 text-sm font-medium text-primary-foreground shadow-luxe transition hover:opacity-90 md:inline-flex"
@@ -205,7 +230,6 @@ function TryOn() {
           )}
         </div>
 
-        {/* OUTFIT SELECTION */}
         <div>
           <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
             <h2 className="mb-5 text-lg text-foreground">2. Choose an outfit</h2>
@@ -245,7 +269,9 @@ function TryOn() {
             {filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border bg-cream/40 p-12 text-center">
                 <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="mt-3 text-sm text-muted-foreground">No outfits in this category yet.</p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  No outfits in this category yet.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
@@ -264,7 +290,6 @@ function TryOn() {
         </div>
       </section>
 
-      {/* Mobile sticky generate */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-4 backdrop-blur-xl md:hidden">
         <button
           onClick={generate}
@@ -274,7 +299,6 @@ function TryOn() {
         </button>
       </div>
 
-      {/* Loading modal */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/60 p-5 backdrop-blur">
           <div className="w-full max-w-md rounded-3xl bg-background p-8 shadow-luxe">
@@ -283,8 +307,10 @@ function TryOn() {
                 <Sparkles className="h-5 w-5" />
               </span>
               <div>
-                <h3 className="text-lg text-foreground">Creating your virtual try-on…</h3>
-                <p className="text-xs text-muted-foreground">Hold tight, this takes a few seconds.</p>
+                <h3 className="text-lg text-foreground">Creating your virtual try-on...</h3>
+                <p className="text-xs text-muted-foreground">
+                  Hold tight, this takes a few seconds.
+                </p>
               </div>
             </div>
             <ul className="space-y-3">
@@ -304,7 +330,9 @@ function TryOn() {
                     >
                       {done ? <Check className="h-3 w-3" /> : i + 1}
                     </span>
-                    <span className={done || active ? "text-foreground" : "text-muted-foreground"}>{s}</span>
+                    <span className={done || active ? "text-foreground" : "text-muted-foreground"}>
+                      {s}
+                    </span>
                   </li>
                 );
               })}

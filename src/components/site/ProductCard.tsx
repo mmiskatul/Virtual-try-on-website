@@ -1,4 +1,6 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
 import type { Product } from "@/lib/products";
 import { Check } from "lucide-react";
 
@@ -49,8 +51,7 @@ export function ProductCard({ product, selected, onSelect, variant = "browse" }:
         </div>
         {!isSelect && (
           <Link
-            to="/try-on"
-            search={{ product: product.id }}
+            href={`/try-on?product=${product.id}`}
             className="mt-2 flex w-full items-center justify-center rounded-full bg-charcoal px-4 py-2.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
           >
             Try On

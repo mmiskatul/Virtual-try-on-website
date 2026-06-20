@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
 export function Footer() {
@@ -13,15 +13,28 @@ export function Footer() {
             <span className="font-display text-xl text-charcoal">AI Fit Studio</span>
           </div>
           <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-            Premium virtual try-on for modern fashion — see how every outfit looks on you before you buy.
+            Premium virtual try-on for modern fashion - see how every outfit looks on you before you
+            buy.
           </p>
         </div>
         <div>
           <h4 className="text-sm font-semibold text-foreground">Explore</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/" className="hover:text-foreground">Home</Link></li>
-            <li><Link to="/collection" className="hover:text-foreground">Collection</Link></li>
-            <li><Link to="/try-on" className="hover:text-foreground">Try-On Studio</Link></li>
+            <li>
+              <Link href="/" className="hover:text-foreground">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/collection" className="hover:text-foreground">
+                Collection
+              </Link>
+            </li>
+            <li>
+              <Link href="/try-on" className="hover:text-foreground">
+                Try-On Studio
+              </Link>
+            </li>
           </ul>
         </div>
         <div>

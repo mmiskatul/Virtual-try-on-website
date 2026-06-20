@@ -1,23 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+"use client";
+
 import { useState } from "react";
+
 import { products, type Gender } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
-export const Route = createFileRoute("/collection")({
-  head: () => ({
-    meta: [
-      { title: "Collection — AI Fit Studio" },
-      { name: "description", content: "Browse our curated collection of menswear and womenswear ready to try on virtually." },
-      { property: "og:title", content: "Collection — AI Fit Studio" },
-      { property: "og:description", content: "Curated outfits for virtual try-on." },
-    ],
-  }),
-  component: Collection,
-});
-
 type Filter = "all" | Gender;
 
-function Collection() {
+export default function Collection() {
   const [filter, setFilter] = useState<Filter>("all");
   const filtered = filter === "all" ? products : products.filter((p) => p.gender === filter);
 
@@ -25,10 +15,15 @@ function Collection() {
     <div className="bg-background">
       <section className="bg-gradient-cream">
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">The collection</p>
-          <h1 className="mt-3 font-display text-5xl text-charcoal sm:text-6xl">Curated for try-on</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+            The collection
+          </p>
+          <h1 className="mt-3 font-display text-5xl text-charcoal sm:text-6xl">
+            Curated for try-on
+          </h1>
           <p className="mt-4 max-w-xl text-base text-muted-foreground">
-            A carefully chosen edit of menswear and womenswear — every piece ready to preview on you.
+            A carefully chosen edit of menswear and womenswear - every piece ready to preview on
+            you.
           </p>
         </div>
       </section>

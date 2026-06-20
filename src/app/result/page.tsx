@@ -1,23 +1,15 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Download, Share2, ShoppingBag, RotateCcw, Sparkles } from "lucide-react";
+
 import { products, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
-export const Route = createFileRoute("/result")({
-  head: () => ({
-    meta: [
-      { title: "Your Try-On Result — AI Fit Studio" },
-      { name: "description", content: "Your AI-generated virtual try-on result." },
-      { property: "og:title", content: "Your Try-On Result" },
-      { property: "og:description", content: "See your AI fashion preview." },
-    ],
-  }),
-  component: Result,
-});
-
-function Result() {
-  const navigate = useNavigate();
+export default function Result() {
+  const router = useRouter();
   const [photo, setPhoto] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [showBefore, setShowBefore] = useState(false);
@@ -27,22 +19,24 @@ function Result() {
     const id = sessionStorage.getItem("tryon:product");
     const prod = id ? products.find((x) => x.id === id) : null;
     if (!p || !prod) {
-      navigate({ to: "/try-on" });
+      router.push("/try-on");
       return;
     }
     setPhoto(p);
     setProduct(prod);
-  }, [navigate]);
+  }, [router]);
 
   if (!photo || !product) {
     return (
       <div className="grid min-h-[60vh] place-items-center">
-        <p className="text-sm text-muted-foreground">Loading your preview…</p>
+        <p className="text-sm text-muted-foreground">Loading your preview...</p>
       </div>
     );
   }
 
-  const similar = products.filter((p) => p.id !== product.id && p.gender === product.gender).slice(0, 4);
+  const similar = products
+    .filter((p) => p.id !== product.id && p.gender === product.gender)
+    .slice(0, 4);
 
   function downloadImage() {
     if (!photo) return;
@@ -65,7 +59,7 @@ function Result() {
         alert("Link copied to clipboard");
       }
     } catch {
-      /* user cancelled */
+      // User cancelled the share sheet.
     }
   }
 
@@ -119,13 +113,19 @@ function Result() {
 
         <aside className="space-y-5">
           <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Outfit details</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Outfit details
+            </p>
             <div className="mt-4 flex gap-5">
-              <img src={product.image} alt={product.name} className="h-32 w-24 rounded-2xl object-cover" />
+              <img
+                src={product.image}
+                alt={product.name}
+                className="h-32 w-24 rounded-2xl object-cover"
+              />
               <div className="min-w-0 flex-1">
                 <h2 className="font-display text-2xl text-charcoal">{product.name}</h2>
                 <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-                  {product.gender} · {product.category}
+                  {product.gender} - {product.category}
                 </p>
                 <p className="mt-3 text-xl font-semibold text-foreground">${product.price}</p>
               </div>
@@ -135,7 +135,7 @@ function Result() {
                 <ShoppingBag className="h-4 w-4" /> Add to Cart
               </button>
               <Link
-                to="/try-on"
+                href="/try-on"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:border-charcoal"
               >
                 <RotateCcw className="h-4 w-4" /> Try another outfit
@@ -156,8 +156,11 @@ function Result() {
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
             <h2 className="font-display text-3xl text-charcoal sm:text-4xl">You may also like</h2>
-            <Link to="/collection" className="text-sm text-muted-foreground hover:text-foreground">
-              View full collection →
+            <Link
+              href="/collection"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              View full collection
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
