@@ -30,7 +30,7 @@ function slugify(value: string): string {
 export default function AdminDashboard() {
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState("mmiskatul");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [gender, setGender] = useState<Gender>("female");
@@ -375,6 +375,7 @@ export default function AdminDashboard() {
                 <input
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
+                  placeholder="admin"
                   className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
                 />
               </label>
