@@ -9,8 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TryOnRouteImport } from './routes/try-on'
+import { Route as ResultRouteImport } from './routes/result'
+import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TryOnRoute = TryOnRouteImport.update({
+  id: '/try-on',
+  path: '/try-on',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultRoute = ResultRouteImport.update({
+  id: '/result',
+  path: '/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionRoute = CollectionRouteImport.update({
+  id: '/collection',
+  path: '/collection',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +37,61 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/collection': typeof CollectionRoute
+  '/result': typeof ResultRoute
+  '/try-on': typeof TryOnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/collection': typeof CollectionRoute
+  '/result': typeof ResultRoute
+  '/try-on': typeof TryOnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/collection': typeof CollectionRoute
+  '/result': typeof ResultRoute
+  '/try-on': typeof TryOnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/collection' | '/result' | '/try-on'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/collection' | '/result' | '/try-on'
+  id: '__root__' | '/' | '/collection' | '/result' | '/try-on'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CollectionRoute: typeof CollectionRoute
+  ResultRoute: typeof ResultRoute
+  TryOnRoute: typeof TryOnRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/try-on': {
+      id: '/try-on'
+      path: '/try-on'
+      fullPath: '/try-on'
+      preLoaderRoute: typeof TryOnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/result': {
+      id: '/result'
+      path: '/result'
+      fullPath: '/result'
+      preLoaderRoute: typeof ResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collection': {
+      id: '/collection'
+      path: '/collection'
+      fullPath: '/collection'
+      preLoaderRoute: typeof CollectionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +104,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CollectionRoute: CollectionRoute,
+  ResultRoute: ResultRoute,
+  TryOnRoute: TryOnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
