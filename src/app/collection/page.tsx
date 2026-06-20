@@ -1,15 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 
-import { products, type Gender } from "@/lib/products";
+import { getProducts } from "@/lib/api";
+import { products as fallbackProducts, type Gender, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
 type Filter = "all" | Gender;
 
 export default function Collection() {
+  const [products, setProducts] = useState<Product[]>(fallbackProducts);
   const [filter, setFilter] = useState<Filter>("all");
   const filtered = filter === "all" ? products : products.filter((p) => p.gender === filter);
+
+  useEffect(() => {
+    getProducts().then(setProducts);
+  }, []);
 
   return (
     <div className="bg-background">
@@ -30,7 +37,7 @@ export default function Collection() {
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
         <div className="mb-8 flex flex-wrap gap-2">
-          {(["all", "female", "male"] as const).map((g) => (
+          {(["all", "female", "male", "unisex"] as const).map((g) => (
             <button
               key={g}
               onClick={() => setFilter(g)}

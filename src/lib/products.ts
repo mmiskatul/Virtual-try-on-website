@@ -7,16 +7,17 @@ import p6 from "@/assets/p6.jpg";
 import p7 from "@/assets/p7.jpg";
 import p8 from "@/assets/p8.jpg";
 
-export type Gender = "male" | "female";
-export type Category = "Shirt" | "T-Shirt" | "Pant" | "Kurti" | "Dress" | "Blouse" | "Blazer";
+export type Gender = "male" | "female" | "unisex";
 
 export interface Product {
   id: string;
   name: string;
   gender: Gender;
-  category: Category;
+  category: string;
   price: number;
   image: string;
+  description?: string;
+  isActive?: boolean;
 }
 
 export const products: Product[] = [

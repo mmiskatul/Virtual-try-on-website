@@ -14,8 +14,7 @@ import {
 } from "lucide-react";
 
 import heroImg from "@/assets/hero-model.jpg";
-import { products } from "@/lib/products";
-import { ProductCard } from "@/components/site/ProductCard";
+import { FeaturedOutfits } from "@/components/site/FeaturedOutfits";
 
 export const metadata: Metadata = {
   title: "AI Fit Studio - Try Outfits Virtually Before You Buy",
@@ -147,31 +146,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-cream">
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">
-                The collection
-              </p>
-              <h2 className="mt-3 font-display text-4xl text-charcoal sm:text-5xl">
-                Featured outfits
-              </h2>
-            </div>
-            <Link
-              href="/collection"
-              className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-gold"
-            >
-              View all <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {products.slice(0, 8).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturedOutfits />
 
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="mb-12 text-center">

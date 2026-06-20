@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { Product } from "@/lib/products";
+import { resolveAssetUrl } from "@/lib/api";
 import { Check } from "lucide-react";
 
 interface Props {
@@ -25,7 +26,7 @@ export function ProductCard({ product, selected, onSelect, variant = "browse" }:
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-cream">
         <img
-          src={product.image}
+          src={resolveAssetUrl(product.image)}
           alt={product.name}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

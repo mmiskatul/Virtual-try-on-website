@@ -1,32 +1,93 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { Download, Share2, ShoppingBag, RotateCcw, Sparkles } from "lucide-react";
 
-import { products, type Product } from "@/lib/products";
+import {
+  getProduct,
+  getProducts,
+  getTryOnResult,
+  resolveAssetUrl,
+  type TryOnResult,
+} from "@/lib/api";
+import type { Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
 export default function Result() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-[60vh] place-items-center">
+          <p className="text-sm text-muted-foreground">Loading your preview...</p>
+        </div>
+      }
+    >
+      <ResultContent />
+    </Suspense>
+  );
+}
+
+function ResultContent() {
   const router = useRouter();
-  const [photo, setPhoto] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const [result, setResult] = useState<TryOnResult | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
+  const [similar, setSimilar] = useState<Product[]>([]);
   const [showBefore, setShowBefore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const p = sessionStorage.getItem("tryon:photo");
-    const id = sessionStorage.getItem("tryon:product");
-    const prod = id ? products.find((x) => x.id === id) : null;
-    if (!p || !prod) {
+    const historyId = searchParams.get("id") ?? sessionStorage.getItem("tryon:lastResultId");
+    if (!historyId) {
       router.push("/try-on");
       return;
     }
-    setPhoto(p);
-    setProduct(prod);
-  }, [router]);
+    const resultId = historyId;
 
-  if (!photo || !product) {
+    async function loadResult() {
+      try {
+        const loadedResult = await getTryOnResult(resultId);
+        const loadedProduct = await getProduct(loadedResult.product_id);
+        const loadedProducts = await getProducts();
+
+        setResult(loadedResult);
+        setProduct(loadedProduct);
+        setSimilar(
+          loadedProducts
+            .filter(
+              (candidate) =>
+                candidate.id !== loadedResult.product_id &&
+                (!loadedProduct || candidate.gender === loadedProduct.gender),
+            )
+            .slice(0, 4),
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not load try-on result.");
+      }
+    }
+
+    loadResult();
+  }, [router, searchParams]);
+
+  if (error) {
+    return (
+      <div className="grid min-h-[60vh] place-items-center">
+        <div className="max-w-md px-5 text-center">
+          <p className="text-sm text-destructive">{error}</p>
+          <Link
+            href="/try-on"
+            className="mt-5 inline-flex items-center justify-center rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground"
+          >
+            Try again
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!result || !product) {
     return (
       <div className="grid min-h-[60vh] place-items-center">
         <p className="text-sm text-muted-foreground">Loading your preview...</p>
@@ -34,15 +95,14 @@ export default function Result() {
     );
   }
 
-  const similar = products
-    .filter((p) => p.id !== product.id && p.gender === product.gender)
-    .slice(0, 4);
+  const resultData = result;
+  const productData = product;
+  const visibleImageUrl = showBefore ? resultData.user_image_url : resultData.result_image_url;
 
   function downloadImage() {
-    if (!photo) return;
     const a = document.createElement("a");
-    a.href = photo;
-    a.download = `ai-fit-studio-${product?.id}.png`;
+    a.href = resolveAssetUrl(resultData.result_image_url);
+    a.download = `ai-fit-studio-${resultData.id}.png`;
     a.click();
   }
 
@@ -51,7 +111,7 @@ export default function Result() {
       if (navigator.share) {
         await navigator.share({
           title: "My AI Fit Studio try-on",
-          text: `Check out how I look in the ${product?.name}!`,
+          text: `Check out how I look in the ${productData.name}!`,
           url: window.location.href,
         });
       } else {
@@ -79,7 +139,7 @@ export default function Result() {
         <div className="space-y-4">
           <div className="relative overflow-hidden rounded-[2rem] border border-border bg-cream shadow-luxe">
             <img
-              src={photo}
+              src={resolveAssetUrl(visibleImageUrl)}
               alt={showBefore ? "Original photo" : "AI generated try-on"}
               className="mx-auto max-h-[720px] w-full object-contain"
             />
@@ -118,16 +178,16 @@ export default function Result() {
             </p>
             <div className="mt-4 flex gap-5">
               <img
-                src={product.image}
-                alt={product.name}
+                src={resolveAssetUrl(productData.image)}
+                alt={productData.name}
                 className="h-32 w-24 rounded-2xl object-cover"
               />
               <div className="min-w-0 flex-1">
-                <h2 className="font-display text-2xl text-charcoal">{product.name}</h2>
+                <h2 className="font-display text-2xl text-charcoal">{productData.name}</h2>
                 <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-                  {product.gender} - {product.category}
+                  {productData.gender} - {productData.category}
                 </p>
-                <p className="mt-3 text-xl font-semibold text-foreground">${product.price}</p>
+                <p className="mt-3 text-xl font-semibold text-foreground">${productData.price}</p>
               </div>
             </div>
             <div className="mt-6 grid gap-3">

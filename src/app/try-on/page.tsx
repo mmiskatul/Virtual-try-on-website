@@ -4,7 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react";
 
-import { products, type Gender, type Product } from "@/lib/products";
+import { generateTryOn, getProducts, resolveAssetUrl, uploadUserPhoto } from "@/lib/api";
+import { products as fallbackProducts, type Gender, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
 const LOADING_STEPS = [
@@ -33,27 +34,42 @@ function TryOnContent() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const initialId = searchParams.get("product");
+  const [products, setProducts] = useState<Product[]>(fallbackProducts);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(
-    initialId ? (products.find((p) => p.id === initialId) ?? null) : null,
+    initialId ? (fallbackProducts.find((p) => p.id === initialId) ?? null) : null,
   );
   const [genderFilter, setGenderFilter] = useState<"all" | Gender>("all");
   const [catFilter, setCatFilter] = useState<string>("all");
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const p = sessionStorage.getItem("tryon:photo");
-    if (p) setPhoto(p);
+    if (p) {
+      setPhoto(p);
+      setPhotoPreview(resolveAssetUrl(p));
+    }
   }, []);
+
+  useEffect(() => {
+    getProducts().then((loadedProducts) => {
+      setProducts(loadedProducts);
+      if (!initialId) return;
+      const product = loadedProducts.find((p) => p.id === initialId);
+      if (product) setSelected(product);
+    });
+  }, [initialId]);
 
   useEffect(() => {
     if (!initialId) return;
     const product = products.find((p) => p.id === initialId);
     if (product) setSelected(product);
-  }, [initialId]);
+  }, [initialId, products]);
 
   const cats = ["all", ...Array.from(new Set(products.map((p) => p.category)))];
   const filtered = products.filter(
@@ -62,30 +78,48 @@ function TryOnContent() {
       (catFilter === "all" || p.category === catFilter),
   );
 
-  function handleFile(file?: File | null) {
+  async function handleFile(file?: File | null) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setError("Please upload an image file (JPG or PNG).");
+      setError("Please upload an image file (JPG, PNG, or WebP).");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      setPhoto(url);
-      sessionStorage.setItem("tryon:photo", url);
+
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoPreview(previewUrl);
+    setUploading(true);
+    setError(null);
+
+    try {
+      const imageUrl = await uploadUserPhoto(file);
+      setPhoto(imageUrl);
+      setPhotoPreview(resolveAssetUrl(imageUrl));
+      sessionStorage.setItem("tryon:photo", imageUrl);
       setError(null);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setPhoto(null);
+      setPhotoPreview(null);
+      sessionStorage.removeItem("tryon:photo");
+      setError(err instanceof Error ? err.message : "Could not upload photo.");
+    } finally {
+      setUploading(false);
+      URL.revokeObjectURL(previewUrl);
+    }
   }
 
   function clearPhoto() {
     setPhoto(null);
+    setPhotoPreview(null);
     sessionStorage.removeItem("tryon:photo");
   }
 
   async function generate() {
     if (!photo) {
       setError("Please upload a photo first.");
+      return;
+    }
+    if (uploading) {
+      setError("Please wait for the photo upload to finish.");
       return;
     }
     if (!selected) {
@@ -95,13 +129,24 @@ function TryOnContent() {
     setError(null);
     setLoading(true);
     setStep(0);
-    for (let i = 0; i < LOADING_STEPS.length; i++) {
-      await new Promise((r) => setTimeout(r, 900));
-      setStep(i + 1);
+    const progress = window.setInterval(() => {
+      setStep((current) => Math.min(current + 1, LOADING_STEPS.length - 1));
+    }, 1200);
+
+    try {
+      const result = await generateTryOn({
+        user_image_url: photo,
+        product_id: selected.id,
+      });
+      window.clearInterval(progress);
+      setStep(LOADING_STEPS.length);
+      sessionStorage.setItem("tryon:lastResultId", result.id);
+      router.push(`/result?id=${result.id}`);
+    } catch (err) {
+      window.clearInterval(progress);
+      setLoading(false);
+      setError(err instanceof Error ? err.message : "Could not generate try-on preview.");
     }
-    sessionStorage.setItem("tryon:product", selected.id);
-    await new Promise((r) => setTimeout(r, 400));
-    router.push("/result");
   }
 
   return (
@@ -133,10 +178,10 @@ function TryOnContent() {
               )}
             </div>
 
-            {photo ? (
+            {photoPreview ? (
               <div className="overflow-hidden rounded-2xl border border-border bg-cream">
                 <img
-                  src={photo}
+                  src={photoPreview}
                   alt="Uploaded preview"
                   className="max-h-[500px] w-full object-contain"
                 />
@@ -192,6 +237,11 @@ function TryOnContent() {
                 </li>
               ))}
             </ul>
+            {uploading && (
+              <p className="mt-4 text-xs font-medium text-muted-foreground">
+                Uploading photo to backend...
+              </p>
+            )}
           </div>
 
           {selected && (
@@ -201,7 +251,7 @@ function TryOnContent() {
               </p>
               <div className="flex items-center gap-4">
                 <img
-                  src={selected.image}
+                  src={resolveAssetUrl(selected.image)}
                   alt={selected.name}
                   className="h-20 w-16 rounded-xl object-cover"
                 />
@@ -235,7 +285,7 @@ function TryOnContent() {
             <h2 className="mb-5 text-lg text-foreground">2. Choose an outfit</h2>
 
             <div className="mb-4 flex flex-wrap gap-2">
-              {(["all", "male", "female"] as const).map((g) => (
+              {(["all", "male", "female", "unisex"] as const).map((g) => (
                 <button
                   key={g}
                   onClick={() => setGenderFilter(g)}
