@@ -91,6 +91,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "AI Fit Studio — Virtual Try-On for Fashion" },
+      { name: "description", content: "AI Style Studio lets users virtually try on fashion outfits using their own photos." },
+      { property: "og:description", content: "AI Style Studio lets users virtually try on fashion outfits using their own photos." },
+      { name: "twitter:description", content: "AI Style Studio lets users virtually try on fashion outfits using their own photos." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f67b2659-59d5-40e2-9533-6c2a06a579be/id-preview-bf4ffd0d--4cd24888-d691-4ed8-b8d2-4d3fb7cfdafb.lovable.app-1781959862773.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f67b2659-59d5-40e2-9533-6c2a06a579be/id-preview-bf4ffd0d--4cd24888-d691-4ed8-b8d2-4d3fb7cfdafb.lovable.app-1781959862773.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
