@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
+const COPYRIGHT_YEAR = 2026;
+
 export function Footer() {
   return (
     <footer className="border-t border-border bg-cream">
@@ -47,7 +49,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border/70">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-5 py-5 text-xs text-muted-foreground sm:flex-row sm:px-8">
-          <p>© {new Date().getFullYear()} AI Fit Studio. All rights reserved.</p>
+          <p>&copy; {COPYRIGHT_YEAR} AI Fit Studio. All rights reserved.</p>
           <p>Crafted with care for fashion lovers.</p>
         </div>
       </div>
