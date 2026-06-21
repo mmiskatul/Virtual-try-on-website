@@ -30,7 +30,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { href: "/miskat/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/miskat/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/miskat/admin/add", label: "Add Product", icon: PlusCircle },
   { href: "/miskat/admin/collection", label: "Collection", icon: Package },
   { href: "/miskat/admin/history", label: "History", icon: History },
@@ -51,7 +51,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const currentTitle = useMemo(() => {
     const activeItem = navItems.find((item) => matchesRoute(pathname, item.href));
-    return activeItem?.label ?? "Dashboard";
+    return activeItem?.label ?? "Admin";
   }, [pathname]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -62,7 +62,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     try {
       await login(loginUsername, password);
       setPassword("");
-      router.replace("/miskat/admin");
+      router.replace("/miskat/admin/dashboard");
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : "Could not log in.");
     } finally {
