@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { History, LayoutDashboard, LogOut, Package, PlusCircle, Shield } from "lucide-react";
+import { LayoutDashboard, LogOut, Package, PlusCircle, Shield } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
@@ -30,7 +30,6 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/miskat/admin/add", label: "Add Product", icon: PlusCircle },
   { href: "/miskat/admin/collection", label: "Collection", icon: Package },
-  { href: "/miskat/admin/history", label: "History", icon: History },
 ];
 
 function matchesRoute(pathname: string, href: string) {
