@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Layers3, PackagePlus, Tags } from "lucide-react";
+import { Layers3, PackagePlus, Tags } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
@@ -76,20 +76,11 @@ export default function AdminDashboardPage() {
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Quick links
-              </p>
-              <h2 className="mt-1 text-xl font-semibold text-foreground">Separate admin routes</h2>
-            </div>
-            <Link
-              href="/miskat/admin/collection"
-              className="inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-            >
-              Open collection
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              Quick links
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-foreground">Separate admin routes</h2>
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
