@@ -19,8 +19,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 type NavItem = {
@@ -139,7 +137,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-r border-border/70 bg-background">
+      <Sidebar className="border-r border-border/70 bg-background">
         <SidebarHeader className="border-b border-border/70 px-3 py-4">
           <div className="flex items-center gap-3 px-2">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-charcoal text-primary-foreground">
@@ -186,16 +184,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Log out
           </button>
         </SidebarFooter>
-        <SidebarRail />
       </Sidebar>
 
       <SidebarInset className="bg-background">
-        <div className="relative flex min-h-svh flex-col">
-          <div className="sticky top-3 z-20 px-3 pt-3 md:hidden">
-            <SidebarTrigger className="rounded-full border border-border bg-background/95 shadow-soft backdrop-blur" />
-          </div>
-          <main className="flex-1">{children}</main>
-        </div>
+        <main className="min-h-svh flex-1">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
