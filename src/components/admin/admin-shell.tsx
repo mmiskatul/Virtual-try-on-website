@@ -28,6 +28,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  { href: "/miskat/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/miskat/admin/add", label: "Add Product", icon: PlusCircle },
   { href: "/miskat/admin/products", label: "Products", icon: Package },
 ];
@@ -138,7 +139,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <Sidebar className="border-r border-border/70 bg-background">
         <SidebarHeader className="border-b border-border/70 px-3 py-4">
-          <div className="flex items-center gap-3 px-2">
+          <Link
+            href="/miskat/admin/dashboard"
+            className="flex items-center gap-3 rounded-xl px-2 py-1 transition hover:bg-sidebar-accent"
+          >
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-charcoal text-primary-foreground">
               <Shield className="h-4 w-4" />
             </span>
@@ -148,7 +152,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 {username ? `Signed in as ${username}` : "Restricted access"}
               </p>
             </div>
-          </div>
+          </Link>
         </SidebarHeader>
         <SidebarContent className="px-2 py-4">
           <SidebarGroup>
