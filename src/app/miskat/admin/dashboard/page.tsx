@@ -5,12 +5,11 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Layers3, PackagePlus, Tags } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
-import { getAdminProducts, resolveAssetUrl } from "@/lib/api";
-import type { Product } from "@/lib/products";
+import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
 
 export default function AdminDashboardPage() {
   const { token } = useAdminAuth();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,9 +17,9 @@ export default function AdminDashboardPage() {
 
     let active = true;
     setLoading(true);
-    getAdminProducts(token)
+    getAdminDashboard(token)
       .then((data) => {
-        if (active) setProducts(data);
+        if (active) setDashboard(data);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -30,8 +29,6 @@ export default function AdminDashboardPage() {
       active = false;
     };
   }, [token]);
-
-  const activeCount = products.filter((product) => product.isActive !== false).length;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -43,7 +40,9 @@ export default function AdminDashboardPage() {
             </span>
             <div>
               <p className="text-sm font-medium text-foreground">Collection total</p>
-              <p className="text-2xl font-semibold text-charcoal">{products.length}</p>
+              <p className="text-2xl font-semibold text-charcoal">
+                {loading ? "-" : dashboard?.totalProducts ?? 0}
+              </p>
             </div>
           </div>
         </div>
@@ -54,7 +53,9 @@ export default function AdminDashboardPage() {
             </span>
             <div>
               <p className="text-sm font-medium text-foreground">Active products</p>
-              <p className="text-2xl font-semibold text-charcoal">{activeCount}</p>
+              <p className="text-2xl font-semibold text-charcoal">
+                {loading ? "-" : dashboard?.activeProducts ?? 0}
+              </p>
             </div>
           </div>
         </div>
@@ -64,9 +65,9 @@ export default function AdminDashboardPage() {
               <PackagePlus className="h-4 w-4" />
             </span>
             <div>
-              <p className="text-sm font-medium text-foreground">Manage routes</p>
-              <p className="text-sm text-muted-foreground">
-                Add, edit, and review products separately.
+              <p className="text-sm font-medium text-foreground">Try-on results</p>
+              <p className="text-2xl font-semibold text-charcoal">
+                {loading ? "-" : dashboard?.totalTryOns ?? 0}
               </p>
             </div>
           </div>
@@ -116,10 +117,10 @@ export default function AdminDashboardPage() {
           <div className="mt-4 grid gap-3">
             {loading ? (
               <p className="text-sm text-muted-foreground">Loading products...</p>
-            ) : products.length === 0 ? (
+            ) : !dashboard || dashboard.recentProducts.length === 0 ? (
               <p className="text-sm text-muted-foreground">No products found.</p>
             ) : (
-              products.slice(0, 4).map((product) => (
+              dashboard.recentProducts.map((product) => (
                 <div
                   key={product.id}
                   className="flex items-center gap-3 rounded-2xl border border-border p-3"

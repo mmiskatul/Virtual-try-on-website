@@ -11,6 +11,13 @@ export interface TryOnResult {
   created_at: string;
 }
 
+export interface AdminDashboardData {
+  totalProducts: number;
+  activeProducts: number;
+  totalTryOns: number;
+  recentProducts: Product[];
+}
+
 interface BackendProduct {
   id: string;
   name: string;
@@ -20,6 +27,13 @@ interface BackendProduct {
   price: number;
   description: string;
   is_active: boolean;
+}
+
+interface BackendAdminDashboardData {
+  total_products: number;
+  active_products: number;
+  total_tryons: number;
+  recent_products: BackendProduct[];
 }
 
 export interface ProductCreateInput {
@@ -85,6 +99,15 @@ function normalizeProduct(product: BackendProduct): Product {
     image: product.image_url,
     description: product.description,
     isActive: product.is_active,
+  };
+}
+
+function normalizeAdminDashboardData(data: BackendAdminDashboardData): AdminDashboardData {
+  return {
+    totalProducts: data.total_products,
+    activeProducts: data.active_products,
+    totalTryOns: data.total_tryons,
+    recentProducts: data.recent_products.map(normalizeProduct),
   };
 }
 
@@ -182,6 +205,11 @@ export async function createProduct(
 export async function getAdminProducts(token: string | null): Promise<Product[]> {
   const data = await adminRequest<BackendProduct[]>("/api/admin/products", token);
   return data.map(normalizeProduct);
+}
+
+export async function getAdminDashboard(token: string | null): Promise<AdminDashboardData> {
+  const data = await adminRequest<BackendAdminDashboardData>("/api/admin/dashboard", token);
+  return normalizeAdminDashboardData(data);
 }
 
 export async function updateProduct(
