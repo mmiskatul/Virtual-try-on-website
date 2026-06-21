@@ -33,6 +33,16 @@ export interface ProductCreateInput {
   is_active: boolean;
 }
 
+export interface ProductUpdateInput {
+  name?: string;
+  gender?: Product["gender"];
+  category?: string;
+  image_url?: string;
+  price?: number;
+  description?: string;
+  is_active?: boolean;
+}
+
 export interface AdminLoginInput {
   username: string;
   password: string;
@@ -97,6 +107,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       // Keep clean fallback message.
     }
     throw new Error(detail);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json() as Promise<T>;
@@ -165,6 +179,29 @@ export async function createProduct(
   return normalizeProduct(data);
 }
 
+export async function getAdminProducts(token: string | null): Promise<Product[]> {
+  const data = await adminRequest<BackendProduct[]>("/api/admin/products", token);
+  return data.map(normalizeProduct);
+}
+
+export async function updateProduct(
+  productId: string,
+  payload: ProductUpdateInput,
+  token: string | null,
+): Promise<Product> {
+  const data = await adminRequest<BackendProduct>(`/api/products/${productId}`, token, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  return normalizeProduct(data);
+}
+
+export async function deleteProduct(productId: string, token: string | null): Promise<void> {
+  await adminRequest<void>(`/api/products/${productId}`, token, {
+    method: "DELETE",
+  });
+}
+
 export async function loginAdmin(payload: AdminLoginInput): Promise<string> {
   const data = await request<{ token: string; token_type: string }>("/api/auth/login", {
     method: "POST",
@@ -196,4 +233,8 @@ export async function generateTryOn(payload: {
 
 export async function getTryOnResult(id: string): Promise<TryOnResult> {
   return request<TryOnResult>(`/api/tryon/history/${id}`);
+}
+
+export async function getTryOnHistory(): Promise<TryOnResult[]> {
+  return request<TryOnResult[]>("/api/tryon/history");
 }
