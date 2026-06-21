@@ -29,7 +29,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/miskat/admin/add", label: "Add Product", icon: PlusCircle },
-  { href: "/miskat/admin/collection", label: "Collection", icon: Package },
+  { href: "/miskat/admin/products", label: "Products", icon: Package },
 ];
 
 function matchesRoute(pathname: string, href: string) {

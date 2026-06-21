@@ -11,11 +11,31 @@ export interface TryOnResult {
   created_at: string;
 }
 
+export interface AdminRecentTryOn {
+  id: string;
+  productId: string;
+  productName: string;
+  userImageUrl: string;
+  garmentImageUrl: string;
+  resultImageUrl: string;
+  createdAt: string;
+}
+
 export interface AdminDashboardData {
   totalProducts: number;
   activeProducts: number;
+  inactiveProducts: number;
   totalTryOns: number;
+  topProductName: string | null;
+  topProductTryOnCount: number;
   recentProducts: Product[];
+  products: AdminDashboardProduct[];
+  recentTryOns: AdminRecentTryOn[];
+}
+
+export interface AdminDashboardProduct extends Product {
+  tryOnCount: number;
+  lastTryOnAt: string | null;
 }
 
 interface BackendProduct {
@@ -32,8 +52,21 @@ interface BackendProduct {
 interface BackendAdminDashboardData {
   total_products: number;
   active_products: number;
+  inactive_products: number;
   total_tryons: number;
+  top_product_name: string | null;
+  top_product_try_on_count: number;
   recent_products: BackendProduct[];
+  products: Array<BackendProduct & { try_on_count: number; last_try_on_at: string | null }>;
+  recent_tryons: Array<{
+    id: string;
+    product_id: string;
+    product_name: string;
+    user_image_url: string;
+    garment_image_url: string;
+    result_image_url: string;
+    created_at: string;
+  }>;
 }
 
 export interface ProductCreateInput {
@@ -106,8 +139,25 @@ function normalizeAdminDashboardData(data: BackendAdminDashboardData): AdminDash
   return {
     totalProducts: data.total_products,
     activeProducts: data.active_products,
+    inactiveProducts: data.inactive_products,
     totalTryOns: data.total_tryons,
+    topProductName: data.top_product_name,
+    topProductTryOnCount: data.top_product_try_on_count,
     recentProducts: data.recent_products.map(normalizeProduct),
+    products: data.products.map((product) => ({
+      ...normalizeProduct(product),
+      tryOnCount: product.try_on_count,
+      lastTryOnAt: product.last_try_on_at,
+    })),
+    recentTryOns: data.recent_tryons.map((item) => ({
+      id: item.id,
+      productId: item.product_id,
+      productName: item.product_name,
+      userImageUrl: item.user_image_url,
+      garmentImageUrl: item.garment_image_url,
+      resultImageUrl: item.result_image_url,
+      createdAt: item.created_at,
+    })),
   };
 }
 
@@ -205,6 +255,14 @@ export async function createProduct(
 export async function getAdminProducts(token: string | null): Promise<Product[]> {
   const data = await adminRequest<BackendProduct[]>("/api/admin/products", token);
   return data.map(normalizeProduct);
+}
+
+export async function getAdminProduct(
+  productId: string,
+  token: string | null,
+): Promise<Product> {
+  const data = await adminRequest<BackendProduct>(`/api/admin/products/${productId}`, token);
+  return normalizeProduct(data);
 }
 
 export async function getAdminDashboard(token: string | null): Promise<AdminDashboardData> {
