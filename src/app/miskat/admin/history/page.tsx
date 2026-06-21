@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 
-import { getTryOnHistory, resolveAssetUrl } from "@/lib/api";
+import { useAdminAuth } from "@/components/admin/admin-auth";
+import { deleteTryOnHistory, getTryOnHistory, resolveAssetUrl } from "@/lib/api";
 import type { TryOnResult } from "@/lib/api";
 
 export default function AdminHistoryPage() {
+  const { token } = useAdminAuth();
   const [history, setHistory] = useState<TryOnResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -29,6 +33,28 @@ export default function AdminHistoryPage() {
       active = false;
     };
   }, []);
+
+  async function handleDelete(historyItem: TryOnResult) {
+    if (!token) {
+      setError("Please log in as admin first.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete history for ${historyItem.product_name}?`);
+    if (!confirmed) return;
+
+    setDeletingId(historyItem.id);
+    setError(null);
+
+    try {
+      await deleteTryOnHistory(historyItem.id, token);
+      setHistory((current) => current.filter((item) => item.id !== historyItem.id));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Could not delete history.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -58,8 +84,19 @@ export default function AdminHistoryPage() {
                     </p>
                     <p className="text-sm text-muted-foreground">History ID: {item.id}</p>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {new Date(item.created_at).toLocaleString()}
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(item.created_at).toLocaleString()}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item)}
+                      disabled={deletingId === item.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {deletingId === item.id ? "Deleting..." : "Delete"}
+                    </button>
                   </div>
                 </div>
 

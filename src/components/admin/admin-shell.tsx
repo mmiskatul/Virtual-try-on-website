@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { History, LayoutDashboard, LogOut, Package, PlusCircle, Shield } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
@@ -47,15 +47,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-
-  const currentTitle = useMemo(() => {
-    if (matchesRoute(pathname, "/miskat/admin/dashboard")) {
-      return "Dashboard";
-    }
-
-    const activeItem = navItems.find((item) => matchesRoute(pathname, item.href));
-    return activeItem?.label ?? "Admin";
-  }, [pathname]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -199,22 +190,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="bg-background">
-        <div className="flex min-h-svh flex-col">
-          <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/70 bg-background/90 px-4 backdrop-blur-xl md:px-6">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="md:hidden" />
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Miskat</p>
-                <h1 className="text-base font-semibold text-foreground">{currentTitle}</h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-muted-foreground md:inline">
-                {username ? `Signed in as ${username}` : "Not signed in"}
-              </span>
-            </div>
-          </header>
-
+        <div className="relative flex min-h-svh flex-col">
+          <div className="sticky top-3 z-20 px-3 pt-3 md:hidden">
+            <SidebarTrigger className="rounded-full border border-border bg-background/95 shadow-soft backdrop-blur" />
+          </div>
           <main className="flex-1">{children}</main>
         </div>
       </SidebarInset>

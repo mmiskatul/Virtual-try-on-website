@@ -266,3 +266,9 @@ export async function getTryOnResult(id: string): Promise<TryOnResult> {
 export async function getTryOnHistory(): Promise<TryOnResult[]> {
   return request<TryOnResult[]>("/api/tryon/history");
 }
+
+export async function deleteTryOnHistory(historyId: string, token: string | null): Promise<void> {
+  await adminRequest<void>(`/api/tryon/history/${historyId}`, token, {
+    method: "DELETE",
+  });
+}
