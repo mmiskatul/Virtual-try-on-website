@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { LayoutDashboard, LogOut, Package, PlusCircle, Shield } from "lucide-react";
+import { LayoutDashboard, LogOut, Package, Shield } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
@@ -29,7 +29,6 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/miskat/admin/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/miskat/admin/add", label: "Add Product", icon: PlusCircle },
   { href: "/miskat/admin/products", label: "Products", icon: Package },
 ];
 
