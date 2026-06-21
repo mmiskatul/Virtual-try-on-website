@@ -66,7 +66,9 @@ export default function AdminDashboardPage() {
         const recentProducts = current.recentProducts.filter((item) => item.id !== product.id);
         const nextTotalProducts = Math.max(0, current.totalProducts - 1);
         const nextActiveProducts =
-          product.isActive === false ? current.activeProducts : Math.max(0, current.activeProducts - 1);
+          product.isActive === false
+            ? current.activeProducts
+            : Math.max(0, current.activeProducts - 1);
 
         return {
           ...current,
@@ -94,7 +96,7 @@ export default function AdminDashboardPage() {
             <div>
               <p className="text-sm font-medium text-foreground">Collection total</p>
               <p className="text-2xl font-semibold text-charcoal">
-                {loading ? "-" : dashboard?.totalProducts ?? 0}
+                {loading ? "-" : (dashboard?.totalProducts ?? 0)}
               </p>
             </div>
           </div>
@@ -107,7 +109,7 @@ export default function AdminDashboardPage() {
             <div>
               <p className="text-sm font-medium text-foreground">Active products</p>
               <p className="text-2xl font-semibold text-charcoal">
-                {loading ? "-" : dashboard?.activeProducts ?? 0}
+                {loading ? "-" : (dashboard?.activeProducts ?? 0)}
               </p>
             </div>
           </div>
@@ -120,7 +122,7 @@ export default function AdminDashboardPage() {
             <div>
               <p className="text-sm font-medium text-foreground">Try-on results</p>
               <p className="text-2xl font-semibold text-charcoal">
-                {loading ? "-" : dashboard?.totalTryOns ?? 0}
+                {loading ? "-" : (dashboard?.totalTryOns ?? 0)}
               </p>
             </div>
           </div>
@@ -133,7 +135,7 @@ export default function AdminDashboardPage() {
             <div>
               <p className="text-sm font-medium text-foreground">Top product</p>
               <p className="text-sm font-semibold text-charcoal">
-                {loading ? "-" : dashboard?.topProductName ?? "No try-ons yet"}
+                {loading ? "-" : (dashboard?.topProductName ?? "No try-ons yet")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {loading ? "" : `${dashboard?.topProductTryOnCount ?? 0} uses`}
@@ -152,9 +154,7 @@ export default function AdminDashboardPage() {
       <section className="mt-8 grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
         <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-              Quick links
-            </p>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Quick links</p>
             <h2 className="mt-1 text-xl font-semibold text-foreground">Separate admin routes</h2>
           </div>
 
@@ -173,7 +173,9 @@ export default function AdminDashboardPage() {
               className="rounded-2xl border border-border bg-background p-4 transition hover:border-charcoal/30 hover:bg-cream/40"
             >
               <p className="text-sm font-medium text-foreground">Open products</p>
-              <p className="mt-1 text-sm text-muted-foreground">Edit individual products directly.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Edit individual products directly.
+              </p>
             </Link>
           </div>
 
@@ -181,18 +183,9 @@ export default function AdminDashboardPage() {
             <div className="rounded-2xl border border-border bg-background p-4">
               <p className="text-sm font-medium text-foreground">Inactive products</p>
               <p className="mt-1 text-2xl font-semibold text-charcoal">
-                {loading ? "-" : dashboard?.inactiveProducts ?? 0}
+                {loading ? "-" : (dashboard?.inactiveProducts ?? 0)}
               </p>
             </div>
-            <Link
-              href="/miskat/admin/history"
-              className="rounded-2xl border border-border bg-background p-4 transition hover:border-charcoal/30 hover:bg-cream/40"
-            >
-              <p className="text-sm font-medium text-foreground">History details</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Review prompts, timestamps, and generated images.
-              </p>
-            </Link>
           </div>
         </div>
 
@@ -324,81 +317,6 @@ export default function AdminDashboardPage() {
                   )}
                 </div>
               </article>
-            ))
-          )}
-        </div>
-      </section>
-
-      <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-soft">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-              Recent activity
-            </p>
-            <h2 className="mt-1 text-xl font-semibold text-foreground">Latest try-ons</h2>
-          </div>
-          {!loading && dashboard && (
-            <Link
-              href="/miskat/admin/history"
-              className="text-sm font-medium text-foreground transition hover:text-gold"
-            >
-              Open history
-            </Link>
-          )}
-        </div>
-
-        <div className="mt-6 grid gap-4">
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading activity...</p>
-          ) : !dashboard || dashboard.recentTryOns.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No try-on activity yet.</p>
-          ) : (
-            dashboard.recentTryOns.map((item) => (
-              <div
-                key={item.id}
-                className="grid gap-4 rounded-2xl border border-border bg-background p-4 md:grid-cols-[0.7fr_1.3fr]"
-              >
-                <div className="grid grid-cols-3 gap-3">
-                  <img
-                    src={resolveAssetUrl(item.userImageUrl)}
-                    alt="User upload"
-                    className="h-28 w-full rounded-xl object-cover"
-                  />
-                  <img
-                    src={resolveAssetUrl(item.garmentImageUrl)}
-                    alt={item.productName}
-                    className="h-28 w-full rounded-xl object-cover"
-                  />
-                  <img
-                    src={resolveAssetUrl(item.resultImageUrl)}
-                    alt="Try-on result"
-                    className="h-28 w-full rounded-xl object-cover"
-                  />
-                </div>
-                <div className="flex flex-col justify-between gap-3">
-                  <div>
-                    <p className="text-base font-semibold text-foreground">{item.productName}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Product ID: {item.productId}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {new Date(item.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-3">
-                    <Link
-                      href={`/miskat/admin/products/${item.productId}`}
-                      className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm text-foreground transition hover:border-charcoal"
-                    >
-                      Open product
-                    </Link>
-                    <Link
-                      href="/miskat/admin/history"
-                      className="inline-flex items-center justify-center rounded-full bg-charcoal px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-                    >
-                      Open history
-                    </Link>
-                  </div>
-                </div>
-              </div>
             ))
           )}
         </div>
