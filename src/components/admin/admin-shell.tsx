@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { LayoutDashboard, History, LogOut, Package, PlusCircle, Shield } from "lucide-react";
+import { History, LayoutDashboard, LogOut, Package, PlusCircle, Shield } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
@@ -30,7 +30,6 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { href: "/miskat/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/miskat/admin/add", label: "Add Product", icon: PlusCircle },
   { href: "/miskat/admin/collection", label: "Collection", icon: Package },
   { href: "/miskat/admin/history", label: "History", icon: History },
@@ -50,6 +49,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const currentTitle = useMemo(() => {
+    if (matchesRoute(pathname, "/miskat/admin/dashboard")) {
+      return "Dashboard";
+    }
+
     const activeItem = navItems.find((item) => matchesRoute(pathname, item.href));
     return activeItem?.label ?? "Admin";
   }, [pathname]);
