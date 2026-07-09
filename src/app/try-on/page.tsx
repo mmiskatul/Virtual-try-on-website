@@ -7,6 +7,7 @@ import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react
 import { generateTryOn, getProducts, resolveAssetUrl, uploadUserPhoto } from "@/lib/api";
 import { products as fallbackProducts, type Gender, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
+import { Textarea } from "@/components/ui/textarea";
 
 const LOADING_STEPS = [
   "Analyzing your photo",
@@ -47,6 +48,7 @@ function TryOnContent() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState("");
 
   useEffect(() => {
     const p = sessionStorage.getItem("tryon:photo");
@@ -137,6 +139,7 @@ function TryOnContent() {
       const result = await generateTryOn({
         user_image_url: photo,
         product_id: selected.id,
+        prompt_optional: prompt.trim() || undefined,
       });
       window.clearInterval(progress);
       setStep(LOADING_STEPS.length);
@@ -264,6 +267,22 @@ function TryOnContent() {
               </div>
             </div>
           )}
+
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              3. Style prompt
+            </p>
+            <Textarea
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+              placeholder="Example: Make it look premium, clean, studio-lit, and realistic."
+              className="min-h-28 resize-none rounded-2xl"
+              maxLength={1000}
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              The system now builds the prompt from the selected product automatically. Add extra style instructions here if needed.
+            </p>
+          </div>
 
           <button
             onClick={generate}

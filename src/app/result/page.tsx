@@ -209,6 +209,39 @@ function ResultContent() {
               For the most accurate fit, upload a photo wearing fitted clothing in good lighting.
             </p>
           </div>
+
+          {resultData.image_details && (
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Image details
+              </p>
+              <div className="mt-4 space-y-2 text-sm text-foreground">
+                <p>
+                  Provider: {resultData.image_details.provider} ({resultData.image_details.model})
+                </p>
+                {resultData.image_details.content_type && (
+                  <p>Format: {resultData.image_details.content_type}</p>
+                )}
+                {(resultData.image_details.width || resultData.image_details.height) && (
+                  <p>
+                    Size: {resultData.image_details.width ?? "?"} x{" "}
+                    {resultData.image_details.height ?? "?"}
+                  </p>
+                )}
+                {typeof resultData.image_details.file_size === "number" && (
+                  <p>File size: {(resultData.image_details.file_size / 1024).toFixed(1)} KB</p>
+                )}
+                {typeof resultData.image_details.seed === "number" && (
+                  <p>Seed: {resultData.image_details.seed}</p>
+                )}
+                {resultData.image_details.request_id && (
+                  <p className="break-all text-xs text-muted-foreground">
+                    Request ID: {resultData.image_details.request_id}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </aside>
       </section>
 

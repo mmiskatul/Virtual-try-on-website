@@ -8,6 +8,18 @@ export interface TryOnResult {
   garment_image_url: string;
   result_image_url: string;
   prompt: string;
+  image_details?: {
+    provider: string;
+    model: string;
+    request_id?: string | null;
+    source_result_url?: string | null;
+    content_type?: string | null;
+    file_name?: string | null;
+    file_size?: number | null;
+    width?: number | null;
+    height?: number | null;
+    seed?: number | null;
+  } | null;
   created_at: string;
 }
 
