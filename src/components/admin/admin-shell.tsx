@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useTransition, type FormEvent, type ReactNode } from "react";
 import {
   LayoutDashboard,
   LogOut,
@@ -22,6 +22,7 @@ import { useAdminAuth } from "@/components/admin/admin-auth";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { username, isAuthenticated, loading, login, logout } = useAdminAuth();
   const [loginUsername, setLoginUsername] = useState("");
@@ -30,6 +31,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [adminSearch, setAdminSearch] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setAdminSearch(pathname === "/admin/collection" ? searchParams.get("q") ?? "" : "");
+  }, [pathname, searchParams]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -61,7 +67,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   function handleAdminSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const query = adminSearch.trim();
-    router.push(query ? `/admin/collection?q=${encodeURIComponent(query)}` : "/admin/collection");
+    const destination = query
+      ? `/admin/collection?q=${encodeURIComponent(query)}`
+      : "/admin/collection";
+    startTransition(() => router.push(destination));
   }
 
   if (loading) {
@@ -145,9 +154,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] flex">
+    <div className="min-h-screen bg-[#FAF9F6] flex lg:h-screen lg:overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-border/40 bg-white flex flex-col justify-between p-6 shrink-0 relative">
+      <aside className="w-64 border-r border-border/40 bg-white flex flex-col justify-between p-6 shrink-0 relative lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:overflow-y-auto">
         <div className="space-y-10">
           {/* Logo */}
           <div className="space-y-1">
@@ -251,21 +260,26 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-64 lg:h-screen lg:overflow-y-auto">
         {/* Header */}
         <header className="h-16 border-b border-border/40 bg-white flex items-center justify-between px-8">
           {/* Search bar */}
           <form
             onSubmit={handleAdminSearch}
-            className="flex items-center bg-neutral-100 rounded-lg px-3 py-1.5 border border-transparent focus-within:border-charcoal/20 max-w-xs w-full"
+            aria-busy={isPending}
+            className={`flex items-center bg-neutral-100 rounded-lg px-3 py-1.5 border border-transparent focus-within:border-charcoal/20 max-w-xs w-full transition-opacity ${
+              isPending ? "opacity-70" : ""
+            }`}
           >
             <Search className="h-3.5 w-3.5 text-muted-foreground mr-2 shrink-0" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={isPending ? "Loading..." : "Search products..."}
               value={adminSearch}
               onChange={(event) => setAdminSearch(event.target.value)}
-              className="bg-transparent text-[9px] tracking-wider uppercase focus:outline-none w-full text-charcoal placeholder-neutral-400 font-semibold"
+              disabled={isPending}
+              aria-label="Search products"
+              className="bg-transparent text-[9px] tracking-wider uppercase focus:outline-none w-full text-charcoal placeholder-neutral-400 font-semibold disabled:cursor-wait"
             />
           </form>
 

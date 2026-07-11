@@ -222,7 +222,7 @@ export default function AdminAddProductPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+    <div className="grid w-full gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] lg:gap-8 lg:px-8">
       <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
         <h2 className="text-lg text-foreground">Product image</h2>
         <label className="mt-5 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-cream/40 px-6 py-12 text-center transition hover:border-charcoal/40">
