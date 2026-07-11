@@ -165,7 +165,7 @@ function TryOnContent() {
         </div>
       </section>
 
-      <section className={`mx-auto ${initialId ? "max-w-2xl py-12" : "grid max-w-7xl gap-8 lg:grid-cols-[1fr_1.4fr] py-10"} px-5 sm:px-8`}>
+      <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_1.4fr]">
         <div className="space-y-5">
           <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
             <div className="mb-4 flex items-center justify-between">
@@ -269,7 +269,7 @@ function TryOnContent() {
 
           <button
             onClick={generate}
-            className={`w-full flex items-center justify-center gap-2 rounded-full bg-charcoal py-4 text-sm font-medium text-primary-foreground shadow-luxe transition hover:opacity-90 ${initialId ? "mt-4" : "hidden md:inline-flex"}`}
+            className="hidden w-full items-center justify-center gap-2 rounded-full bg-charcoal py-4 text-sm font-medium text-primary-foreground shadow-luxe transition hover:opacity-90 md:inline-flex"
           >
             <Sparkles className="h-4 w-4" /> Generate Try-On
           </button>
@@ -282,78 +282,74 @@ function TryOnContent() {
           )}
         </div>
 
-        {!initialId && (
-          <div>
-            <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-              <h2 className="mb-5 text-lg text-foreground">2. Choose an outfit</h2>
+        <div>
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+            <h2 className="mb-5 text-lg text-foreground">2. Choose an outfit</h2>
 
-              <div className="mb-4 flex flex-wrap gap-2">
-                {(["all", "male", "female", "unisex"] as const).map((g) => (
-                  <button
-                    key={g}
-                    onClick={() => setGenderFilter(g)}
-                    className={`rounded-full px-4 py-1.5 text-xs font-medium capitalize transition ${
-                      genderFilter === g
-                        ? "bg-charcoal text-primary-foreground"
-                        : "border border-border text-foreground hover:border-charcoal"
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mb-6 flex flex-wrap gap-2">
-                {cats.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCatFilter(c)}
-                    className={`rounded-full px-3.5 py-1 text-[11px] uppercase tracking-wider transition ${
-                      catFilter === c
-                        ? "bg-cream-deep text-charcoal"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {c === "all" ? "All categories" : c}
-                  </button>
-                ))}
-              </div>
-
-              {filtered.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border bg-cream/40 p-12 text-center">
-                  <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    No outfits in this category yet.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
-                  {filtered.map((p) => (
-                    <ProductCard
-                      key={p.id}
-                      product={p}
-                      variant="select"
-                      selected={selected?.id === p.id}
-                      onSelect={setSelected}
-                    />
-                  ))}
-                </div>
-              )}
+            <div className="mb-4 flex flex-wrap gap-2">
+              {(["all", "male", "female", "unisex"] as const).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setGenderFilter(g)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-medium capitalize transition ${
+                    genderFilter === g
+                      ? "bg-charcoal text-primary-foreground"
+                      : "border border-border text-foreground hover:border-charcoal"
+                  }`}
+                >
+                  {g}
+                </button>
+              ))}
             </div>
+
+            <div className="mb-6 flex flex-wrap gap-2">
+              {cats.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCatFilter(c)}
+                  className={`rounded-full px-3.5 py-1 text-[11px] uppercase tracking-wider transition ${
+                    catFilter === c
+                      ? "bg-cream-deep text-charcoal"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {c === "all" ? "All categories" : c}
+                </button>
+              ))}
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border bg-cream/40 p-12 text-center">
+                <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
+                <p className="mt-3 text-sm text-muted-foreground">
+                  No outfits in this category yet.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+                {filtered.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    variant="select"
+                    selected={selected?.id === p.id}
+                    onSelect={setSelected}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </section>
 
-      {!initialId && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-4 backdrop-blur-xl md:hidden">
-          <button
-            onClick={generate}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-charcoal py-4 text-sm font-medium text-primary-foreground shadow-luxe"
-          >
-            <Sparkles className="h-4 w-4" /> Generate Try-On
-          </button>
-        </div>
-      )}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-4 backdrop-blur-xl md:hidden">
+        <button
+          onClick={generate}
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-charcoal py-4 text-sm font-medium text-primary-foreground shadow-luxe"
+        >
+          <Sparkles className="h-4 w-4" /> Generate Try-On
+        </button>
+      </div>
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/60 p-5 backdrop-blur">
