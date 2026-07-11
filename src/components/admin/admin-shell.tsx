@@ -133,7 +133,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               { label: "Overview", href: "/miskat/admin/dashboard", icon: LayoutDashboard },
               { label: "Collections", href: "/miskat/admin/collection", icon: Layers3 },
               { label: "Try-On Sessions", href: "/miskat/admin/history", icon: UserCheck },
-              { label: "Analytics", href: "/miskat/admin/dashboard", icon: TrendingUp },
+              { label: "Analytics", href: "/miskat/admin/analytics", icon: TrendingUp },
               { label: "Settings", href: "/miskat/admin/settings", icon: Settings },
             ].map((item) => {
               const Icon = item.icon;
