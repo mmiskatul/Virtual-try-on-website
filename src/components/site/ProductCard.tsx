@@ -48,7 +48,7 @@ export function ProductCard({ product, selected, onSelect, variant = "browse" }:
             <h3 className="truncate text-sm font-medium text-foreground">{product.name}</h3>
             <p className="text-xs text-muted-foreground">{product.category}</p>
           </div>
-          <p className="shrink-0 text-sm font-semibold text-foreground">${product.price}</p>
+          <p className="shrink-0 text-sm font-semibold text-foreground">৳{product.price}</p>
         </div>
         {!isSelect && (
           <Link

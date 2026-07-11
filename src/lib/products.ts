@@ -22,6 +22,7 @@ export interface Product {
   cloth_type?: string;
   coverage?: Coverage;
   available_sizes?: string[];
+  size_details?: string;
   fit_type?: string;
   color?: string;
   occasion?: string;

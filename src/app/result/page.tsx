@@ -187,7 +187,7 @@ function ResultContent() {
                 <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
                   {productData.gender} - {productData.category}
                 </p>
-                <p className="mt-3 text-xl font-semibold text-foreground">${productData.price}</p>
+                <p className="mt-3 text-xl font-semibold text-foreground">৳{productData.price}</p>
               </div>
             </div>
             <div className="mt-6 grid gap-3">

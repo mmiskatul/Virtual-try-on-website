@@ -40,6 +40,8 @@ function TryOnContent() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>(initialSize);
+  const [userBodySize, setUserBodySize] = useState<string>("");
+  const [userSizeDetails, setUserSizeDetails] = useState("");
   const [genderFilter, setGenderFilter] = useState<"all" | Gender>("all");
   const [catFilter, setCatFilter] = useState<string>("all");
   const [dragOver, setDragOver] = useState(false);
@@ -82,6 +84,21 @@ function TryOnContent() {
         console.error("Could not pre-select product:", err);
       });
   }, [initialId]);
+
+  // Auto-select size when selected product changes
+  useEffect(() => {
+    if (selected) {
+      if (selected.available_sizes && selected.available_sizes.length > 0) {
+        if (!selectedSize || !selected.available_sizes.includes(selectedSize)) {
+          setSelectedSize(selected.available_sizes[0]);
+        }
+      } else {
+        setSelectedSize("");
+      }
+    } else {
+      setSelectedSize("");
+    }
+  }, [selected]);
 
   const cats = ["all", ...Array.from(new Set(products.map((p) => p.category)))];
   const filtered = products.filter(
@@ -138,6 +155,14 @@ function TryOnContent() {
       setError("Please select an outfit.");
       return;
     }
+    if (!selectedSize) {
+      setError("Please select the Try-On Garment Size.");
+      return;
+    }
+    if (!userBodySize) {
+      setError("Please select your Normal Body Size.");
+      return;
+    }
     setError(null);
     setLoading(true);
     setStep(0);
@@ -149,7 +174,9 @@ function TryOnContent() {
       const result = await generateTryOn({
         user_image_url: photo,
         product_id: selected.id,
-        selected_size: selectedSize || undefined,
+        selected_size: selectedSize,
+        user_body_size: userBodySize,
+        user_size_details: userSizeDetails.trim() || undefined,
         prompt_optional: prompt.trim() || undefined,
       });
       window.clearInterval(progress);
@@ -274,7 +301,7 @@ function TryOnContent() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">{selected.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {selected.category} · ${selected.price}
+                      {selected.category} · ৳{selected.price}
                     </p>
                     {selected.cloth_type && (
                       <p className="text-[10px] text-muted-foreground mt-0.5">{selected.cloth_type}</p>
@@ -283,11 +310,46 @@ function TryOnContent() {
                 </div>
               </div>
 
-              {/* Size picker */}
+              {/* My Normal Body Size Selector */}
               <div className="border-t border-border pt-4 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Your Size
+                    My Normal Body Size
+                  </p>
+                  {userBodySize && (
+                    <span className="text-[10px] font-bold text-gold uppercase tracking-wider">
+                      Size {userBodySize} selected
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => setUserBodySize(size)}
+                      className={`min-w-[40px] h-9 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition px-2.5 ${
+                        userBodySize === size
+                          ? "bg-charcoal border-transparent text-primary-foreground"
+                          : "border-border text-foreground hover:border-charcoal bg-background"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                {!userBodySize && (
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Please select your normal body size.
+                  </p>
+                )}
+              </div>
+
+              {/* Try-On Garment Size Selector */}
+              <div className="border-t border-border pt-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Try-On Garment Size
                   </p>
                   {selectedSize && (
                     <span className="text-[10px] font-bold text-gold uppercase tracking-wider">
@@ -302,6 +364,7 @@ function TryOnContent() {
                   ).map((size) => (
                     <button
                       key={size}
+                      type="button"
                       onClick={() => setSelectedSize(size)}
                       className={`min-w-[40px] h-9 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition px-2.5 ${
                         selectedSize === size
@@ -315,9 +378,38 @@ function TryOnContent() {
                 </div>
                 {!selectedSize && (
                   <p className="text-[10px] text-muted-foreground italic">
-                    Please select your size before generating.
+                    Please select the garment size to try-on.
                   </p>
                 )}
+              </div>
+
+              {selected.size_details && (
+                <div className="border-t border-border pt-3.5 space-y-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Garment Size Specifications
+                  </p>
+                  <p className="whitespace-pre-line text-xs text-foreground/80 bg-cream/35 border border-border/40 rounded-2xl p-3.5 leading-relaxed">
+                    {selected.size_details}
+                  </p>
+                </div>
+              )}
+
+              <div className="border-t border-border pt-4 space-y-2">
+                <label className="grid gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    My Sizing / Body Details
+                  </span>
+                  <input
+                    type="text"
+                    value={userSizeDetails}
+                    onChange={(event) => setUserSizeDetails(event.target.value)}
+                    placeholder="e.g. Height: 5'8, Chest: 38 in, fitted/oversized"
+                    className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-xs outline-none transition focus:border-charcoal"
+                  />
+                </label>
+                <p className="text-[10px] text-muted-foreground leading-normal">
+                  Provide body details (like height, chest/waist measurements) or fit preferences to help the AI generate the perfect drape.
+                </p>
               </div>
             </div>
           )}

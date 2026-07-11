@@ -31,6 +31,15 @@ export default function AdminProductDetailPage() {
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [materials, setMaterials] = useState("");
+  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+  const [sizeDetails, setSizeDetails] = useState("");
+  const [coverage, setCoverage] = useState<string>("full");
+  const [fitType, setFitType] = useState("");
+  const [clothType, setClothType] = useState("");
+  const [color, setColor] = useState("");
+  const [occasion, setOccasion] = useState("");
+  const [careInstructions, setCareInstructions] = useState("");
+  const [brand, setBrand] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
@@ -57,6 +66,15 @@ export default function AdminProductDetailPage() {
         setPrice(String(product.price));
         setDescription(product.description ?? "");
         setMaterials(product.materials ?? "");
+        setAvailableSizes(product.available_sizes ?? []);
+        setSizeDetails(product.size_details ?? "");
+        setCoverage(product.coverage ?? "full");
+        setFitType(product.fit_type ?? "");
+        setClothType(product.cloth_type ?? "");
+        setColor(product.color ?? "");
+        setOccasion(product.occasion ?? "");
+        setCareInstructions(product.care_instructions ?? "");
+        setBrand(product.brand ?? "");
         setIsActive(product.isActive ?? true);
         setImageUrl(product.image);
         setPreviewUrl(resolveAssetUrl(product.image));
@@ -129,6 +147,15 @@ export default function AdminProductDetailPage() {
           price: numericPrice,
           description,
           materials: materials || undefined,
+          available_sizes: availableSizes,
+          size_details: sizeDetails || undefined,
+          coverage: coverage || undefined,
+          fit_type: fitType || undefined,
+          cloth_type: clothType || undefined,
+          color: color || undefined,
+          occasion: occasion || undefined,
+          care_instructions: careInstructions || undefined,
+          brand: brand || undefined,
           is_active: isActive,
         },
         token,
@@ -297,6 +324,148 @@ export default function AdminProductDetailPage() {
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 rows={5}
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            <div className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Available Sizes
+              </span>
+              <div className="flex flex-wrap gap-2.5 mt-1">
+                {["XS", "S", "M", "L", "XL", "XXL"].map((size) => {
+                  const checked = availableSizes.includes(size);
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        setAvailableSizes((prev) =>
+                          prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+                        );
+                      }}
+                      className={`h-11 px-5 rounded-xl border text-xs font-bold uppercase transition flex items-center justify-center ${
+                        checked
+                          ? "bg-charcoal border-charcoal text-white shadow-sm"
+                          : "border-border bg-background text-foreground hover:border-charcoal"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Sizing Specifications / Details
+              </span>
+              <textarea
+                value={sizeDetails}
+                onChange={(event) => setSizeDetails(event.target.value)}
+                placeholder="e.g., XS: chest 34, length 26 | S: chest 36, length 27 | M: chest 38, length 28"
+                rows={3}
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Coverage
+                </span>
+                <select
+                  value={coverage}
+                  onChange={(event) => setCoverage(event.target.value)}
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                >
+                  <option value="upper">Upper Body</option>
+                  <option value="lower">Lower Body</option>
+                  <option value="full">Full Body</option>
+                  <option value="accessory">Accessory</option>
+                </select>
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Fit Type
+                </span>
+                <input
+                  type="text"
+                  value={fitType}
+                  onChange={(event) => setFitType(event.target.value)}
+                  placeholder="e.g. Slim, Regular, Relaxed"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Fabric / Cloth Type
+                </span>
+                <input
+                  type="text"
+                  value={clothType}
+                  onChange={(event) => setClothType(event.target.value)}
+                  placeholder="e.g. Linen, Cotton, Chiffon"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Color
+                </span>
+                <input
+                  type="text"
+                  value={color}
+                  onChange={(event) => setColor(event.target.value)}
+                  placeholder="e.g. Midnight Black, Ivory White"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Occasion
+                </span>
+                <input
+                  type="text"
+                  value={occasion}
+                  onChange={(event) => setOccasion(event.target.value)}
+                  placeholder="e.g. Casual, Evening wear"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Brand
+                </span>
+                <input
+                  type="text"
+                  value={brand}
+                  onChange={(event) => setBrand(event.target.value)}
+                  placeholder="e.g. Atelier, Levi's"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Care Instructions
+              </span>
+              <textarea
+                value={careInstructions}
+                onChange={(event) => setCareInstructions(event.target.value)}
+                placeholder="e.g. Dry clean recommended. Wash cold."
+                rows={3}
                 className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
               />
             </label>

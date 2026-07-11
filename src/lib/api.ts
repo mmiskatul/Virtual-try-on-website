@@ -62,6 +62,7 @@ interface BackendProduct {
   cloth_type?: string;
   coverage?: string;
   available_sizes?: string[];
+  size_details?: string;
   fit_type?: string;
   color?: string;
   occasion?: string;
@@ -91,7 +92,7 @@ interface BackendAdminDashboardData {
 }
 
 export interface ProductCreateInput {
-  id: string;
+  id?: string;
   name: string;
   gender: Product["gender"];
   category: string;
@@ -102,6 +103,7 @@ export interface ProductCreateInput {
   cloth_type?: string;
   coverage?: string;
   available_sizes?: string[];
+  size_details?: string;
   fit_type?: string;
   color?: string;
   occasion?: string;
@@ -121,6 +123,7 @@ export interface ProductUpdateInput {
   cloth_type?: string;
   coverage?: string;
   available_sizes?: string[];
+  size_details?: string;
   fit_type?: string;
   color?: string;
   occasion?: string;
@@ -174,6 +177,7 @@ function normalizeProduct(product: BackendProduct): Product {
     cloth_type: product.cloth_type,
     coverage: product.coverage as Product["coverage"],
     available_sizes: product.available_sizes ?? [],
+    size_details: product.size_details,
     fit_type: product.fit_type,
     color: product.color,
     occasion: product.occasion,
@@ -359,7 +363,9 @@ export async function getAdminSession(): Promise<{ username: string }> {
 export async function generateTryOn(payload: {
   user_image_url: string;
   product_id: string;
-  selected_size?: string;
+  selected_size: string;
+  user_body_size: string;
+  user_size_details?: string;
   prompt_optional?: string;
 }): Promise<TryOnResult> {
   return request<TryOnResult>("/api/tryon/generate", {

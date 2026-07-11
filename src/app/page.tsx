@@ -178,7 +178,7 @@ export default async function Home() {
                         </p>
                         <p className="text-xs font-bold text-charcoal">Sculpted Silk Blouse</p>
                       </div>
-                      <span className="text-xs font-semibold text-charcoal">$850</span>
+                      <span className="text-xs font-semibold text-charcoal">৳850</span>
                     </div>
                   </div>
                 </div>
@@ -312,7 +312,7 @@ export default async function Home() {
                       {item.name}
                     </h3>
                   </div>
-                  <span className="text-sm font-semibold text-charcoal">${item.price}</span>
+                  <span className="text-sm font-semibold text-charcoal">৳{item.price}</span>
                 </div>
               </Link>
             </div>

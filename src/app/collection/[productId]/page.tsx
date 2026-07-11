@@ -180,7 +180,7 @@ export default function ProductDetailsPage({
               {product.name}
             </h1>
             <p className="mt-3 text-2xl font-light text-charcoal/90">
-              ${product.price.toFixed(2)}
+              ৳{product.price.toFixed(2)}
             </p>
           </div>
 
@@ -241,6 +241,14 @@ export default function ProductDetailsPage({
                 Size information not available. Default sizes shown.
               </p>
             )}
+            {product.size_details && (
+              <div className="mt-3 rounded-2xl bg-neutral-50/50 border border-neutral-200/60 p-4 text-[11px] text-muted-foreground">
+                <span className="font-bold text-charcoal uppercase tracking-wider text-[9px] block mb-1">
+                  Sizing details / specifications:
+                </span>
+                <p className="whitespace-pre-line text-xs">{product.size_details}</p>
+              </div>
+            )}
           </div>
 
           {/* CTA Actions */}
@@ -296,8 +304,9 @@ export default function ProductDetailsPage({
                     ["Fit Type", product.fit_type],
                     ["Occasion", product.occasion],
                     ["Brand", product.brand],
-                    ["Price", product.price && `$${product.price.toFixed(2)}`],
+                    ["Price", product.price && `৳${product.price.toFixed(2)}`],
                     ["Available Sizes", product.available_sizes && product.available_sizes.length > 0 ? product.available_sizes.join(", ") : null],
+                    ["Sizing Info", product.size_details],
                   ]
                     .filter(([, v]) => v)
                     .map(([label, value]) => (

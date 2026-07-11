@@ -101,7 +101,7 @@ export default function AdminProductsPage() {
                       {product.gender} - {product.category}
                     </p>
                   </div>
-                  <p className="shrink-0 text-sm font-semibold text-foreground">${product.price}</p>
+                  <p className="shrink-0 text-sm font-semibold text-foreground">৳{product.price}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2 text-xs">
