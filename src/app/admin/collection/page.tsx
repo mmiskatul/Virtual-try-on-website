@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { BarChart2, Download, Edit2, Plus, Search, Sparkles } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type StatusFilter = "all" | "live" | "inactive";
 
@@ -35,7 +36,7 @@ function exportProducts(data: AdminDashboardData) {
   URL.revokeObjectURL(url);
 }
 
-export default function AdminCollectionsPage() {
+function AdminCollectionsPageContent() {
   const searchParams = useSearchParams();
   const { token } = useAdminAuth();
   const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
@@ -162,7 +163,37 @@ export default function AdminCollectionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 text-xs font-semibold text-charcoal">
-              {products.map((product) => (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={idx} className="transition hover:bg-neutral-50/40">
+                    <td className="flex items-center gap-4 p-5 pl-8">
+                      <Skeleton className="h-11 w-11 rounded-lg" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </td>
+                    <td className="p-5">
+                      <Skeleton className="h-4 w-16" />
+                    </td>
+                    <td className="p-5">
+                      <Skeleton className="h-5 w-12 rounded-full" />
+                    </td>
+                    <td className="p-5">
+                      <Skeleton className="h-4 w-8" />
+                    </td>
+                    <td className="p-5">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="p-5 pr-8 text-right flex justify-end gap-2 items-center h-full mt-2.5">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                products.map((product) => (
                 <tr key={product.id} className="transition hover:bg-neutral-50/40">
                   <td className="flex items-center gap-4 p-5 pl-8">
                     <img
@@ -202,7 +233,7 @@ export default function AdminCollectionsPage() {
                       <Edit2 className="h-3.5 w-3.5" />
                     </Link>
                     <Link
-                      href="/admin/analytics"
+                      href={`/admin/analytics?product=${product.id}`}
                       aria-label="View analytics"
                       className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
                     >
@@ -217,7 +248,8 @@ export default function AdminCollectionsPage() {
                     </Link>
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
           </table>
         </div>
@@ -226,9 +258,7 @@ export default function AdminCollectionsPage() {
             No products match this view.
           </p>
         )}
-        {loading && (
-          <p className="p-8 text-center text-sm text-muted-foreground">Loading products…</p>
-        )}
+        {loading && null}
         <div className="border-t border-neutral-200 px-8 py-5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
           Showing {products.length} of {dashboard?.totalProducts ?? 0} products
         </div>
@@ -262,5 +292,17 @@ export default function AdminCollectionsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminCollectionsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading collections...</p>
+      </div>
+    }>
+      <AdminCollectionsPageContent />
+    </Suspense>
   );
 }

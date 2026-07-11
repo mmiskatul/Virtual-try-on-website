@@ -6,6 +6,7 @@ import { Edit3, PlusCircle, Sparkles } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminProductsPage() {
   const { token } = useAdminAuth();
@@ -73,7 +74,25 @@ export default function AdminProductsPage() {
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {loading ? (
-          <p className="text-sm text-muted-foreground">Loading products...</p>
+          Array.from({ length: 6 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-soft space-y-4"
+            >
+              <Skeleton className="h-72 w-full rounded-2xl" />
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <Skeleton className="h-6 w-2/3" />
+                  <Skeleton className="h-6 w-1/6" />
+                </div>
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Skeleton className="h-10 flex-1 rounded-full" />
+                <Skeleton className="h-10 w-12 rounded-full" />
+              </div>
+            </div>
+          ))
         ) : !dashboard || dashboard.products.length === 0 ? (
           <p className="text-sm text-muted-foreground">No products found.</p>
         ) : (

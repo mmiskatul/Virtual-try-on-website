@@ -16,6 +16,7 @@ import {
   WashingMachine,
 } from "lucide-react";
 import { getProduct, resolveAssetUrl } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const COVERAGE_LABEL: Record<string, string> = {
   upper: "Upper Body",
@@ -68,11 +69,58 @@ export default function ProductDetailsPage({
   // Loading state
   if (loading) {
     return (
-      <div className="bg-white min-h-screen flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-8 w-8 text-[#806B4D] animate-spin" />
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Loading product details…
-        </p>
+      <div className="bg-white min-h-screen pb-24 font-sans animate-fadeIn">
+        {/* Back navigation skeleton */}
+        <section className="mx-auto max-w-7xl px-5 pt-8 sm:px-8">
+          <Skeleton className="h-4 w-32 animate-pulse bg-primary/10" />
+        </section>
+
+        {/* Main product area skeleton */}
+        <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 grid gap-12 lg:grid-cols-12">
+          {/* Left Column: Image Skeleton */}
+          <div className="lg:col-span-6">
+            <Skeleton className="aspect-[4/5] w-full rounded-3xl animate-pulse bg-primary/10" />
+            <div className="mt-4 flex items-center gap-2">
+              <Skeleton className="h-3.5 w-16 animate-pulse bg-primary/10" />
+              <Skeleton className="h-6 w-24 rounded-md animate-pulse bg-primary/10" />
+            </div>
+          </div>
+
+          {/* Right Column: Info Skeleton */}
+          <div className="lg:col-span-6 space-y-7">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-1/4 animate-pulse bg-primary/10" />
+              <Skeleton className="h-10 w-2/3 animate-pulse bg-primary/10" />
+              <Skeleton className="h-8 w-24 animate-pulse bg-primary/10" />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-8 w-28 rounded-full animate-pulse bg-primary/10" />
+              <Skeleton className="h-8 w-32 rounded-full animate-pulse bg-primary/10" />
+              <Skeleton className="h-8 w-24 rounded-full animate-pulse bg-primary/10" />
+            </div>
+
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full animate-pulse bg-primary/10" />
+              <Skeleton className="h-4 w-5/6 animate-pulse bg-primary/10" />
+              <Skeleton className="h-4 w-4/5 animate-pulse bg-primary/10" />
+            </div>
+
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-20 animate-pulse bg-primary/10" />
+              <div className="flex gap-2.5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-11 rounded-lg animate-pulse bg-primary/10" />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Skeleton className="h-14 flex-1 rounded-xl animate-pulse bg-primary/10" />
+              <Skeleton className="h-14 flex-1 rounded-xl animate-pulse bg-primary/10" />
+            </div>
+          </div>
+        </section>
       </div>
     );
   }

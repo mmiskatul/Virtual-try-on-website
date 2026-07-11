@@ -4,6 +4,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 import {
   generateTryOn,
   getProduct,
@@ -43,6 +45,7 @@ function TryOnContent() {
   const initialId = searchParams.get("product");
   const initialSize = searchParams.get("size") ?? "";
   const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [photo, setPhoto] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(null);
@@ -69,11 +72,13 @@ function TryOnContent() {
 
   // Load all backend products for the outfit picker
   useEffect(() => {
+    setLoadingProducts(true);
     getProducts()
       .then((loadedProducts) => {
         setProducts(loadedProducts);
       })
-      .catch(() => setProducts([]));
+      .catch(() => setProducts([]))
+      .finally(() => setLoadingProducts(false));
   }, []);
 
   // If a product ID is passed via ?product=, fetch it directly from the backend
@@ -189,6 +194,7 @@ function TryOnContent() {
         product_id: selected.id,
         selected_size: selectedSize,
         user_body_size: userBodySize,
+        user_size_details: userSizeDetails.trim() || undefined,
         prompt_optional: prompt.trim() || undefined,
       });
       window.clearInterval(progress);
@@ -407,6 +413,36 @@ function TryOnContent() {
                   </p>
                 </div>
               )}
+
+              {/* Measurement/Body Details Input */}
+              <div className="border-t border-border pt-4 space-y-2">
+                <label className="block space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    My Measurements / Body Details (Optional)
+                  </span>
+                  <textarea
+                    value={userSizeDetails}
+                    onChange={(e) => setUserSizeDetails(e.target.value)}
+                    placeholder="e.g. Height: 5'10'', broad shoulders, long torso"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-charcoal focus:outline-none min-h-[60px] resize-y leading-relaxed"
+                  />
+                </label>
+              </div>
+
+              {/* Try-On / Styling Instructions Input */}
+              <div className="border-t border-border pt-4 space-y-2">
+                <label className="block space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Styling & Try-on Instructions (Optional)
+                  </span>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="e.g. Tuck the shirt in, roll up the sleeves, style it loosely draped"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-charcoal focus:outline-none min-h-[60px] resize-y leading-relaxed"
+                  />
+                </label>
+              </div>
             </div>
           )}
 
@@ -461,7 +497,17 @@ function TryOnContent() {
               ))}
             </div>
 
-            {filtered.length === 0 ? (
+            {loadingProducts ? (
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-3 rounded-2xl border border-neutral-100 p-3 bg-white">
+                    <Skeleton className="aspect-[3/4] w-full rounded-xl" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-4 w-1/3" />
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border bg-cream/40 p-12 text-center">
                 <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
                 <p className="mt-3 text-sm text-muted-foreground">

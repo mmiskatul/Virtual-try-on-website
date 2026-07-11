@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, ImagePlus, Save, Sparkles, Trash2 } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   createCategory,
   deleteProduct,
@@ -275,7 +276,7 @@ export default function AdminProductDetailPage() {
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Preview</p>
               <h1 className="mt-1 text-xl font-semibold text-foreground">
-                {loading ? "Loading product..." : name || "Product"}
+                {loading ? <Skeleton className="h-6 w-48" /> : name || "Product"}
               </h1>
             </div>
             {productId && (
@@ -288,7 +289,9 @@ export default function AdminProductDetailPage() {
 
           <div className="mt-6 grid gap-3">
             <div className="overflow-hidden rounded-2xl border border-border bg-cream/30">
-              {previewUrl ? (
+              {loading ? (
+                <Skeleton className="h-72 w-full" />
+              ) : previewUrl ? (
                 <img
                   src={previewUrl}
                   alt={name || "Product"}
@@ -314,7 +317,22 @@ export default function AdminProductDetailPage() {
         </section>
 
         <section className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-          <form onSubmit={handleSave} className="grid gap-5">
+          {loading ? (
+            <div className="space-y-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-2.5">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-11 w-full rounded-2xl" />
+                </div>
+              ))}
+              <div className="flex gap-3 pt-4">
+                <Skeleton className="h-11 w-32 rounded-full" />
+                <Skeleton className="h-11 w-32 rounded-full" />
+                <Skeleton className="h-11 w-20 rounded-full" />
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSave} className="grid gap-5">
             <label className="grid gap-2">
               <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Name
@@ -627,6 +645,7 @@ export default function AdminProductDetailPage() {
               </button>
             </div>
           </form>
+          )}
         </section>
       </div>
     </div>

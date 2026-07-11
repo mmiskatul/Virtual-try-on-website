@@ -4,12 +4,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Sparkles } from "lucide-react";
 import { getProducts, resolveAssetUrl } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Collection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [productsList, setProductsList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     getProducts().then((loadedProducts) => {
       if (loadedProducts && loadedProducts.length > 0) {
         const activeProducts = loadedProducts.filter((p) => p.isActive !== false);
@@ -17,6 +20,8 @@ export default function Collection() {
       }
     }).catch((err) => {
       console.error("Failed to load products.");
+    }).finally(() => {
+      setLoading(false);
     });
   }, []);
 
@@ -99,7 +104,22 @@ export default function Collection() {
 
       {/* Dynamic Product Grid */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="aspect-[4/5] w-full rounded-2xl animate-pulse" />
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-1/4" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-5 w-2/3" />
+                    <Skeleton className="h-5 w-12" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border py-24 text-center bg-[#FAF9F6]/20">
             <Sparkles className="mx-auto h-8 w-8 text-[#806B4D] animate-pulse" />
             <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-neutral-400">

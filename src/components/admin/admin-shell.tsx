@@ -15,6 +15,7 @@ import {
   Sparkles,
   Eye,
   EyeOff,
+  Shirt,
 } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
@@ -171,7 +172,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 label: "Collections",
                 href: "/admin/collection",
                 icon: Layers3,
-                routes: ["/admin/collection", "/admin/products", "/admin/add"],
+                routes: ["/admin/collection"],
+              },
+              {
+                label: "Product Management",
+                href: "/admin/products",
+                icon: Shirt,
+                routes: ["/admin/products", "/admin/add"],
               },
               {
                 label: "Virtual Try-On",

@@ -30,11 +30,13 @@ export const metadata: Metadata = {
 
 function resolveAssetUrl(path: string | null | undefined): string {
   if (!path) return "";
-  if (path.startsWith("data:") || path.startsWith("http:") || path.startsWith("https:") || path.startsWith("blob:") || path.startsWith("/")) {
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:") || path.startsWith("blob:")) {
     return path;
   }
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  return `${apiBase}/${path}`;
+  const normalizedBase = apiBase.replace(/\/$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${normalizedBase}${normalizedPath}`;
 }
 
 async function getProducts() {

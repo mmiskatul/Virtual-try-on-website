@@ -6,6 +6,7 @@ import { Activity, Layers3, Package, Pencil, Shirt, Sparkles } from "lucide-reac
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboardPage() {
   const { token } = useAdminAuth();
@@ -93,9 +94,9 @@ export default function AdminDashboardPage() {
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
               Total Try-Ons
             </p>
-            <p className="font-display text-4xl font-light text-charcoal">
-              {loading ? "—" : (dashboard?.totalTryOns ?? 0).toLocaleString()}
-            </p>
+            <div className="font-display text-4xl font-light text-charcoal">
+              {loading ? <Skeleton className="h-10 w-24 bg-[#806B4D]/10" /> : (dashboard?.totalTryOns ?? 0).toLocaleString()}
+            </div>
           </div>
           <div className="mt-4 h-1 w-full rounded-full bg-[#806B4D]" />
         </div>
@@ -113,26 +114,34 @@ export default function AdminDashboardPage() {
             <p className="text-[9px] font-bold uppercase tracking-wider text-neutral-400">
               Try-Ons Today
             </p>
-            <p className="font-display text-4xl font-light text-white">
-              {loading ? "—" : (dashboard?.tryOnsToday ?? 0).toLocaleString()}
-            </p>
+            <div className="font-display text-4xl font-light text-white">
+              {loading ? <Skeleton className="h-10 w-24 bg-neutral-700" /> : (dashboard?.tryOnsToday ?? 0).toLocaleString()}
+            </div>
           </div>
-          <div
-            className="mt-4 flex h-7 items-end gap-1"
-            aria-label="Try-ons during the last seven days"
-          >
-            {(
-              dashboard?.tryOnsLast7Days ??
-              Array.from({ length: 7 }, (_, index) => ({ date: String(index), count: 0 }))
-            ).map((item) => (
-              <div
-                key={item.date}
-                className="min-h-1 w-full rounded-t-sm bg-[#B99A6C] transition-[height]"
-                style={{ height: `${Math.max(12, (item.count / highestDailyCount) * 100)}%` }}
-                title={`${item.date}: ${item.count} try-ons`}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="mt-4 flex h-7 items-end gap-1">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <Skeleton key={i} className="h-full w-full bg-neutral-700" />
+              ))}
+            </div>
+          ) : (
+            <div
+              className="mt-4 flex h-7 items-end gap-1"
+              aria-label="Try-ons during the last seven days"
+            >
+              {(
+                dashboard?.tryOnsLast7Days ??
+                Array.from({ length: 7 }, (_, index) => ({ date: String(index), count: 0 }))
+              ).map((item) => (
+                <div
+                  key={item.date}
+                  className="min-h-1 w-full rounded-t-sm bg-[#B99A6C] transition-[height]"
+                  style={{ height: `${Math.max(12, (item.count / highestDailyCount) * 100)}%` }}
+                  title={`${item.date}: ${item.count} try-ons`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex min-h-[180px] flex-col justify-between rounded-3xl border border-neutral-200/50 bg-white p-6 shadow-soft">
@@ -141,20 +150,20 @@ export default function AdminDashboardPage() {
               <Layers3 className="h-5 w-5" />
             </span>
             <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-400">
-              {loading ? "" : `${dashboard?.inactiveProducts ?? 0} inactive`}
+              {loading ? <Skeleton className="h-3 w-16" /> : `${dashboard?.inactiveProducts ?? 0} inactive`}
             </span>
           </div>
           <div className="mt-4 space-y-1">
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
               Active Products
             </p>
-            <p className="font-display text-4xl font-light text-charcoal">
-              {loading ? "—" : (dashboard?.activeProducts ?? 0).toLocaleString()}
-            </p>
+            <div className="font-display text-4xl font-light text-charcoal">
+              {loading ? <Skeleton className="h-10 w-24 bg-[#806B4D]/10" /> : (dashboard?.activeProducts ?? 0).toLocaleString()}
+            </div>
           </div>
-          <p className="mt-4 text-[9px] font-bold uppercase tracking-wider text-[#806B4D]">
-            {loading ? "Loading inventory" : `${dashboard?.totalProducts ?? 0} products total`}
-          </p>
+          <div className="mt-4 text-[9px] font-bold uppercase tracking-wider text-[#806B4D]">
+            {loading ? <Skeleton className="h-3 w-28" /> : `${dashboard?.totalProducts ?? 0} products total`}
+          </div>
         </div>
       </div>
 
@@ -181,7 +190,20 @@ export default function AdminDashboardPage() {
 
           <div className="grid gap-6 sm:grid-cols-2">
             {loading ? (
-              <p className="text-sm text-muted-foreground">Loading collection…</p>
+              Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="space-y-4 rounded-3xl border border-neutral-200/40 bg-white p-4 shadow-soft">
+                  <Skeleton className="aspect-[4/5] w-full rounded-2xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-3.5 w-1/3" />
+                    <Skeleton className="h-5 w-2/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Skeleton className="h-10 rounded-xl" />
+                    <Skeleton className="h-10 rounded-xl" />
+                  </div>
+                </div>
+              ))
             ) : !dashboard || dashboard.recentProducts.length === 0 ? (
               <p className="text-sm text-muted-foreground">No products have been added yet.</p>
             ) : (
