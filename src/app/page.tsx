@@ -28,7 +28,67 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+function resolveAssetUrl(path: string | null | undefined): string {
+  if (!path) return "";
+  if (path.startsWith("data:") || path.startsWith("http:") || path.startsWith("https:") || path.startsWith("blob:") || path.startsWith("/")) {
+    return path;
+  }
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  return `${apiBase}/${path}`;
+}
+
+async function getProducts() {
+  try {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const res = await fetch(`${apiBase}/api/products`, { next: { revalidate: 10 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      gender: product.gender,
+      category: product.category,
+      price: product.price,
+      image: product.image_url,
+      description: product.description,
+      isActive: product.is_active,
+    }));
+  } catch (e) {
+    console.error("Failed to fetch products on server:", e);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const products = await getProducts();
+  const activeProducts = products.filter((p: any) => p.isActive !== false);
+
+  const fallbackItems = [
+    {
+      id: "sculpted-wool-overcoat",
+      category: "CHARCOAL / TAILORED",
+      name: "Sculpted Wool Overcoat",
+      price: 1250,
+      image: p7.src,
+    },
+    {
+      id: "silk-bias-midi-dress",
+      category: "CHAMPAGNE / EVENING",
+      name: "Silk Bias Midi Dress",
+      price: 890,
+      image: p5.src,
+    },
+    {
+      id: "pleated-crepe-trousers",
+      category: "ESPRESSO / TAILORED",
+      name: "Pleated Crepe Trousers",
+      price: 450,
+      image: p3.src,
+    },
+  ];
+
+  const displayItems = activeProducts.length > 0 ? activeProducts.slice(0, 3) : fallbackItems;
+
   return (
     <>
       {/* Hero Section */}
@@ -150,43 +210,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Seamless Transformation Section */}
-      <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
-        <div className="mb-16 text-center space-y-3">
-          <h2 className="font-display text-4xl text-charcoal sm:text-5xl leading-tight">
-            Seamless Transformation
-          </h2>
-          <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Our AI technology bridges the gap between digital discovery and physical reality in three precise steps.
-          </p>
-        </div>
+      {/* Interactive Process Flow */}
+      <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 border-t border-border/40">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#806B4D]">
+          How it works
+        </span>
+        <h2 className="mt-2 font-display text-4xl text-charcoal sm:text-5xl">
+          Atelier Craft meets Neural Code
+        </h2>
         
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
               num: "01",
-              img: stepCapture.src,
-              title: "The Capture",
-              desc: "Upload a high-resolution photo or take a live mirror-selfie through our secure studio portal.",
+              title: "Digital Capture",
+              desc: "Upload a clean, high-resolution front-facing photo. Our vision algorithms instantly build a unique structural body map.",
+              img: stepCapture.src
             },
             {
               num: "02",
-              img: stepFitting.src,
-              title: "Neural Fitting",
-              desc: "Our engine analyzes your unique proportions and simulates fabric physics for a true-to-life fit.",
+              title: "Atelier Curation",
+              desc: "Select a luxury silhouette from our digital showroom. Each piece is modeled down to the exact thread weight and weave.",
+              img: stepCuration.src
             },
             {
               num: "03",
-              img: stepCuration.src,
-              title: "Perfect Curation",
-              desc: "Instantly visualize entire collections on your body and receive personalized styling advice.",
-            },
+              title: "Neural Fitting",
+              desc: "Watch our physical simulators compute fabric gravity, volume, and drape for an indistinguishable mirror reflection.",
+              img: stepFitting.src
+            }
           ].map((step) => (
-            <div key={step.num} className="group relative space-y-6">
-              {/* Step number overlay */}
-              <div className="absolute top-2 left-2 z-10 font-display text-[3.5rem] leading-none font-bold text-white/90 drop-shadow-sm select-none">
-                {step.num}
-              </div>
+            <div key={step.num} className="group space-y-5">
               <div className="relative overflow-hidden rounded-2xl aspect-[4/3] bg-neutral-100 border border-neutral-100 shadow-soft">
                 <img
                   src={step.img}
@@ -225,45 +279,42 @@ export default function Home() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              category: "OUTERWEAR",
-              name: "Architectural Wool Coat",
-              price: 1250,
-              image: p7.src,
-            },
-            {
-              category: "FOOTWEAR",
-              name: "Studio Leather Sneaker",
-              price: 450,
-              image: p3.src,
-            },
-            {
-              category: "EVENING",
-              name: "Midnight Velvet Gown",
-              price: 990,
-              image: p5.src,
-            },
-          ].map((item, idx) => (
-            <div key={idx} className="group relative space-y-4 cursor-pointer">
-              <div className="overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-100 border border-neutral-100 shadow-soft">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {item.category}
-                  </p>
-                  <h3 className="mt-1 font-display text-lg font-medium text-charcoal group-hover:text-[#806B4D] transition">
-                    {item.name}
-                  </h3>
+          {displayItems.map((item: any, idx: number) => (
+            <div key={item.id || idx} className="group relative space-y-4">
+              <Link href={`/collection/${item.id}`} className="block cursor-pointer">
+                <div className="overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-100 border border-neutral-100 shadow-soft relative">
+                  <img
+                    src={resolveAssetUrl(item.image)}
+                    alt={item.name}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
                 </div>
-                <span className="text-sm font-semibold text-charcoal">${item.price}</span>
+              </Link>
+              
+              {/* Floating Try On Virtually Action */}
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition duration-300 z-10">
+                <Link
+                  href={`/try-on?product=${item.id}`}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-3.5 py-2 text-[9px] font-bold uppercase tracking-wider text-charcoal border border-neutral-200/40 shadow-soft hover:bg-charcoal hover:text-white transition duration-200"
+                >
+                  <Sparkles className="h-3 w-3 text-[#806B4D]" />
+                  <span>Try On Virtually</span>
+                </Link>
               </div>
+
+              <Link href={`/collection/${item.id}`} className="block cursor-pointer">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {item.category}
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-medium text-charcoal group-hover:text-[#806B4D] transition">
+                      {item.name}
+                    </h3>
+                  </div>
+                  <span className="text-sm font-semibold text-charcoal">${item.price}</span>
+                </div>
+              </Link>
             </div>
           ))}
         </div>
