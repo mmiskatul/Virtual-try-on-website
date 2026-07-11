@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 
 import p1 from "@/assets/p1.jpg";
 import p3 from "@/assets/p3.jpg";
@@ -289,25 +289,43 @@ export default function Collection() {
 
 function ProductCardItem({ item }: { item: any }) {
   return (
-    <Link href={`/collection/${item.id}`} className="group relative block space-y-4 cursor-pointer">
-      <div className="overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-100 border border-neutral-100 shadow-soft">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-        />
-      </div>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {item.category}
-          </p>
-          <h3 className="mt-1 font-display text-lg font-medium text-charcoal group-hover:text-[#806B4D] transition">
-            {item.name}
-          </h3>
+    <div className="group relative block space-y-4">
+      {/* Product Image Link */}
+      <Link href={`/collection/${item.id}`} className="block cursor-pointer">
+        <div className="overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-100 border border-neutral-100 shadow-soft relative">
+          <img
+            src={item.image}
+            alt={item.name}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
         </div>
-        <span className="text-sm font-semibold text-charcoal">${item.price}</span>
+      </Link>
+
+      {/* Floating Try On Virtually Action */}
+      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition duration-300 z-10">
+        <Link
+          href={`/try-on?product=${item.id}`}
+          className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-3.5 py-2 text-[9px] font-bold uppercase tracking-wider text-charcoal border border-neutral-200/40 shadow-soft hover:bg-charcoal hover:text-white transition duration-200"
+        >
+          <Sparkles className="h-3 w-3 text-[#806B4D]" />
+          <span>Try On Virtually</span>
+        </Link>
       </div>
-    </Link>
+
+      {/* Info Link */}
+      <Link href={`/collection/${item.id}`} className="block cursor-pointer">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {item.category}
+            </p>
+            <h3 className="mt-1 font-display text-lg font-medium text-charcoal group-hover:text-[#806B4D] transition">
+              {item.name}
+            </h3>
+          </div>
+          <span className="text-sm font-semibold text-charcoal">${item.price}</span>
+        </div>
+      </Link>
+    </div>
   );
 }
