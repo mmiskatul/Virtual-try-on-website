@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Sparkles, ShoppingBag, Search } from "lucide-react";
+import { Menu, X, Sparkles, Search } from "lucide-react";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -17,6 +17,20 @@ export function Navbar() {
     { href: "/about", label: "About" },
   ] as const;
 
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get("q") as string;
+    const url = new URL(window.location.href);
+    if (query) {
+      url.searchParams.set("search", query);
+    } else {
+      url.searchParams.delete("search");
+    }
+    window.history.replaceState({}, "", url.toString());
+    window.dispatchEvent(new Event("search-change"));
+  }
+
   if (pathname.startsWith("/admin")) {
     return null;
   }
@@ -29,19 +43,19 @@ export function Navbar() {
           <span className="grid h-8 w-8 place-items-center rounded-full bg-charcoal text-white shadow-soft">
             <Sparkles className="h-3.5 w-3.5" />
           </span>
-          <span className="font-display text-lg tracking-tight font-semibold text-charcoal">
+          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
             AI Fit Studio
           </span>
         </Link>
 
-        {/* Center Links */}
+        {/* Navigation Links */}
         <nav className="hidden items-center gap-8 md:flex">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className={`text-xs uppercase tracking-wider font-medium transition-colors hover:text-foreground ${
-                pathname === l.href ? "text-foreground" : "text-muted-foreground"
+              className={`text-xs font-semibold uppercase tracking-wider transition ${
+                pathname === l.href ? "text-[#806B4D]" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {l.label}
@@ -49,46 +63,45 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Search Bar (Only shown on /collection page) */}
-        {pathname === "/collection" && (
-          <div className="hidden md:flex items-center bg-neutral-100 rounded-lg px-3 py-1.5 border border-transparent focus-within:border-charcoal/20 max-w-[200px] lg:max-w-[280px] w-full">
-            <Search className="h-3.5 w-3.5 text-muted-foreground mr-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="SEARCH COLLECTION..."
-              className="bg-transparent text-[9px] tracking-wider uppercase focus:outline-none w-full text-charcoal placeholder-neutral-400 font-semibold"
-              onChange={(e) => {
-                const val = e.target.value;
-                const url = new URL(window.location.href);
-                if (val) {
-                  url.searchParams.set("search", val);
-                } else {
-                  url.searchParams.delete("search");
-                }
-                window.history.replaceState({}, "", url.toString());
-                window.dispatchEvent(new Event("search-change"));
-              }}
-            />
+        {/* Action Controls */}
+        <div className="flex items-center gap-4.5">
+          {/* Search form trigger */}
+          {pathname === "/collection" && (
+            <div className="relative">
+              <form onSubmit={handleSearch} className="relative flex items-center bg-[#FAF9F6] border border-neutral-200/60 rounded-full px-3 py-1.5 focus-within:border-charcoal/20">
+                <Search className="h-3.5 w-3.5 text-neutral-400 mr-1.5 shrink-0" />
+                <input
+                  name="q"
+                  type="text"
+                  placeholder="Search catalog..."
+                  defaultValue={new URLSearchParams(typeof window !== "undefined" ? window.location.search : "").get("search") || ""}
+                  className="bg-transparent text-[10px] font-semibold uppercase tracking-wider focus:outline-none w-28 text-charcoal placeholder-neutral-400"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const url = new URL(window.location.href);
+                    if (value) {
+                      url.searchParams.set("search", value);
+                    } else {
+                      url.searchParams.delete("search");
+                    }
+                    window.history.replaceState({}, "", url.toString());
+                    window.dispatchEvent(new Event("search-change"));
+                  }}
+                />
+              </form>
+            </div>
+          )}
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setOpen(!open)}
+              className="grid h-9 w-9 place-items-center rounded-full border border-border md:hidden"
+              aria-label="Menu"
+            >
+              {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
           </div>
-        )}
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-4">
-          <Link
-            href="/cart"
-            className="text-muted-foreground transition hover:text-foreground"
-            aria-label="Cart"
-          >
-            <ShoppingBag className="h-4.5 w-4.5" />
-          </Link>
-
-          <button
-            onClick={() => setOpen(!open)}
-            className="grid h-9 w-9 place-items-center rounded-full border border-border md:hidden"
-            aria-label="Menu"
-          >
-            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
         </div>
       </div>
 
