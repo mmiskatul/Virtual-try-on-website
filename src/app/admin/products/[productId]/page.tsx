@@ -3,7 +3,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, ImagePlus, Save, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, ImagePlus, Save, Sparkles, Trash2 } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
@@ -218,7 +218,11 @@ export default function AdminProductDetailPage() {
           <div className="mt-6 grid gap-3">
             <div className="overflow-hidden rounded-2xl border border-border bg-cream/30">
               {previewUrl ? (
-                <img src={previewUrl} alt={name || "Product"} className="h-72 w-full object-contain" />
+                <img
+                  src={previewUrl}
+                  alt={name || "Product"}
+                  className="h-72 w-full object-contain"
+                />
               ) : (
                 <div className="grid h-72 place-items-center text-sm text-muted-foreground">
                   No preview available.
@@ -341,7 +345,7 @@ export default function AdminProductDetailPage() {
                       type="button"
                       onClick={() => {
                         setAvailableSizes((prev) =>
-                          prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+                          prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
                         );
                       }}
                       className={`h-11 px-5 rounded-xl border text-xs font-bold uppercase transition flex items-center justify-center ${
@@ -514,6 +518,12 @@ export default function AdminProductDetailPage() {
                 <Save className="h-4 w-4" />
                 {saving ? "Saving..." : "Save changes"}
               </button>
+              <Link
+                href={`/admin/try-on?product=${productId}`}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:border-charcoal"
+              >
+                <Sparkles className="h-4 w-4" /> Virtual Try-On
+              </Link>
               <button
                 type="button"
                 onClick={handleDelete}

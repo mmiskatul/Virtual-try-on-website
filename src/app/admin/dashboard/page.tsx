@@ -2,21 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Activity, Layers3, Shirt, User } from "lucide-react";
+import { Activity, Layers3, Package, Pencil, Shirt, Sparkles } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
-
-function relativeTime(value: string) {
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
-  if (elapsedSeconds < 60) return "Just now";
-  const minutes = Math.floor(elapsedSeconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
 
 export default function AdminDashboardPage() {
   const { token } = useAdminAuth();
@@ -56,16 +45,32 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-12 px-5 py-8 sm:px-8">
-      <div className="space-y-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#806B4D]">
-          Studio Core
-        </span>
-        <h1 className="font-display text-4xl leading-tight text-charcoal">
-          <span className="relative inline-block pb-2.5">
-            Performance Intelligence
-            <span className="absolute bottom-0 left-0 h-[3px] w-24 bg-[#806B4D]" />
+      <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-end">
+        <div className="space-y-1.5">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#806B4D]">
+            Studio Core
           </span>
-        </h1>
+          <h1 className="font-display text-4xl leading-tight text-charcoal">
+            <span className="relative inline-block pb-2.5">
+              Performance Intelligence
+              <span className="absolute bottom-0 left-0 h-[3px] w-24 bg-[#806B4D]" />
+            </span>
+          </h1>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/products"
+            className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-charcoal transition hover:border-charcoal/50"
+          >
+            <Package className="h-4 w-4" /> Manage Products
+          </Link>
+          <Link
+            href="/admin/try-on"
+            className="inline-flex items-center gap-2 rounded-xl bg-charcoal px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-[#806B4D]"
+          >
+            <Sparkles className="h-4 w-4" /> Virtual Try-On
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -153,8 +158,8 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-12">
-        <section className="space-y-6 lg:col-span-8">
+      <div>
+        <section className="space-y-6">
           <div className="flex items-end justify-between border-b border-neutral-200/50 pb-4">
             <div>
               <h2 className="font-display text-2xl font-medium text-charcoal">
@@ -181,9 +186,8 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-muted-foreground">No products have been added yet.</p>
             ) : (
               dashboard.recentProducts.slice(0, 2).map((product) => (
-                <Link
+                <article
                   key={product.id}
-                  href={`/admin/products/${product.id}`}
                   className="group space-y-4 rounded-3xl border border-neutral-200/40 bg-white p-4 shadow-soft"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-neutral-100 bg-neutral-100">
@@ -210,65 +214,24 @@ export default function AdminDashboardPage() {
                       ID: {product.id}
                     </p>
                   </div>
-                </Link>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href={`/admin/products/${product.id}`}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-neutral-200 px-3 py-2.5 text-[9px] font-bold uppercase tracking-wider text-charcoal hover:border-charcoal/50"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Edit
+                    </Link>
+                    <Link
+                      href={`/admin/try-on?product=${product.id}`}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-charcoal px-3 py-2.5 text-[9px] font-bold uppercase tracking-wider text-white hover:bg-[#806B4D]"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" /> Try On
+                    </Link>
+                  </div>
+                </article>
               ))
             )}
           </div>
-        </section>
-
-        <section className="flex min-h-[400px] flex-col justify-between rounded-3xl border border-neutral-200/50 bg-white p-6 shadow-soft lg:col-span-4">
-          <div className="space-y-6">
-            <h2 className="border-b border-neutral-200/40 pb-4 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-              Recent Activity
-            </h2>
-            <div className="space-y-6">
-              {loading ? (
-                <p className="text-sm text-muted-foreground">Loading activity…</p>
-              ) : !dashboard || dashboard.recentTryOns.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No try-on activity yet.</p>
-              ) : (
-                dashboard.recentTryOns.slice(0, 4).map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-start gap-3 text-xs font-semibold text-charcoal"
-                  >
-                    <div className="mt-0.5 h-9 w-9 shrink-0 overflow-hidden rounded-full border border-neutral-200 bg-neutral-50">
-                      <img
-                        src={resolveAssetUrl(item.resultImageUrl)}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-xs font-bold text-charcoal">
-                          Try-on completed
-                        </span>
-                        <span className="shrink-0 text-[8px] font-bold uppercase tracking-wider text-neutral-400">
-                          {relativeTime(item.createdAt)}
-                        </span>
-                      </div>
-                      <p className="text-[11px] font-medium leading-relaxed text-neutral-500">
-                        Generated a result for{" "}
-                        <span className="text-[#806B4D]">{item.productName}</span>.
-                      </p>
-                      <span className="inline-block text-[8px] font-bold uppercase tracking-widest text-emerald-600">
-                        Successful generation
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <Link
-            href="/admin/history"
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-200 py-3 text-[10px] font-bold uppercase tracking-wider text-charcoal transition hover:border-charcoal/50"
-          >
-            <User className="h-3.5 w-3.5" />
-            View Full History
-          </Link>
         </section>
       </div>
 

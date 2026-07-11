@@ -2,14 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Edit3, Eye, PlusCircle } from "lucide-react";
+import { Edit3, PlusCircle, Sparkles } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
-import {
-  getAdminDashboard,
-  resolveAssetUrl,
-  type AdminDashboardData,
-} from "@/lib/api";
+import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
 
 export default function AdminProductsPage() {
   const { token } = useAdminAuth();
@@ -52,13 +48,21 @@ export default function AdminProductsPage() {
             Open a dedicated product page to edit details, images, status, and pricing.
           </p>
         </div>
-        <Link
-          href="/admin/add"
-          className="inline-flex items-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Add product
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/try-on"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:border-charcoal"
+          >
+            <Sparkles className="h-4 w-4" /> Virtual Try-On
+          </Link>
+          <Link
+            href="/admin/add"
+            className="inline-flex items-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add product
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -128,10 +132,12 @@ export default function AdminProductsPage() {
                     Edit
                   </Link>
                   <Link
-                    href={`/try-on?product=${product.id}`}
+                    href={`/admin/try-on?product=${product.id}`}
+                    aria-label={`Virtually try on ${product.name}`}
+                    title="Virtual try-on"
                     className="inline-flex items-center justify-center rounded-full border border-border px-4 py-3 text-sm text-foreground transition hover:border-charcoal"
                   >
-                    <Eye className="h-4 w-4" />
+                    <Sparkles className="h-4 w-4" />
                   </Link>
                 </div>
               </div>

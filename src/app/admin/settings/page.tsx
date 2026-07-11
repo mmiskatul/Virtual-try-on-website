@@ -1,305 +1,298 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Check, Palette, Save, Sliders, UserRound } from "lucide-react";
+
+import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
-  Sparkles,
-  ChevronDown,
-  UserPlus,
-  MoreVertical,
-  Sliders,
-  Palette,
-  Check,
-  Download,
-} from "lucide-react";
+  getAdminSettings,
+  updateAdminSettings,
+  type AdminStudioSettings,
+  type AdminStudioSettingsInput,
+} from "@/lib/api";
+
+const defaultDraft: AdminStudioSettingsInput = {
+  highFidelityRendering: true,
+  realTimePhysics: true,
+  precisionCalibration: false,
+  themeAccent: "gold",
+  typography: "Libre Caslon Text",
+};
 
 export default function AdminSettingsPage() {
-  const [fidelity, setFidelity] = useState(true);
-  const [physics, setPhysics] = useState(true);
-  const [calibration, setCalibration] = useState(false);
-  const [themeAccent, setThemeAccent] = useState<"gold" | "black" | "red">("gold");
-  const [typography, setTypography] = useState("Libre Caslon Text");
+  const { token } = useAdminAuth();
+  const [saved, setSaved] = useState<AdminStudioSettings | null>(null);
+  const [draft, setDraft] = useState<AdminStudioSettingsInput>(defaultDraft);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const team = [
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    getAdminSettings(token)
+      .then((data) => {
+        if (!active) return;
+        setSaved(data);
+        setDraft({
+          highFidelityRendering: data.highFidelityRendering,
+          realTimePhysics: data.realTimePhysics,
+          precisionCalibration: data.precisionCalibration,
+          themeAccent: data.themeAccent,
+          typography: data.typography,
+        });
+      })
+      .catch((loadError) => {
+        if (active)
+          setError(loadError instanceof Error ? loadError.message : "Could not load settings.");
+      })
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  function discard() {
+    if (!saved) return;
+    setDraft({
+      highFidelityRendering: saved.highFidelityRendering,
+      realTimePhysics: saved.realTimePhysics,
+      precisionCalibration: saved.precisionCalibration,
+      themeAccent: saved.themeAccent,
+      typography: saved.typography,
+    });
+    setMessage("Unsaved changes discarded.");
+  }
+
+  async function save() {
+    if (!token) return;
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const data = await updateAdminSettings(draft, token);
+      setSaved(data);
+      setMessage("Studio settings saved successfully.");
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Could not save settings.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const toggles: Array<{
+    key: "highFidelityRendering" | "realTimePhysics" | "precisionCalibration";
+    label: string;
+    description: string;
+  }> = [
     {
-      name: "Julian Vane",
-      email: "julian@atelier.ai",
-      role: "SUPER ADMIN",
-      status: "Active Now",
-      statusClass: "text-emerald-500",
-      active: "Just now",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100",
+      key: "highFidelityRendering",
+      label: "High-Fidelity Rendering",
+      description:
+        "Adds explicit texture, stitching, and garment-detail guidance to future generations.",
     },
     {
-      name: "Elena Rossi",
-      email: "elena.r@atelier.ai",
-      role: "EDITOR",
-      status: "Away",
-      statusClass: "text-neutral-400",
-      active: "2 hours ago",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100",
+      key: "realTimePhysics",
+      label: "Realistic Fabric Physics",
+      description:
+        "Guides future generations to preserve fabric drape, folds, weight, and body contact.",
     },
     {
-      name: "Marcus Thorne",
-      email: "m.thorne@atelier.ai",
-      role: "VIEWER",
-      status: "Online",
-      statusClass: "text-emerald-500",
-      active: "15 mins ago",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100",
+      key: "precisionCalibration",
+      label: "Precision Calibration",
+      description: "Adds stricter pose, garment-alignment, and lighting calibration guidance.",
     },
   ];
 
   return (
-    <div className="px-8 py-8 space-y-8">
-      {/* Title Header */}
+    <div className="space-y-8 px-5 py-8 sm:px-8">
       <div className="space-y-1.5">
-        <h1 className="font-display text-4xl text-charcoal font-medium">System Settings & Calibration</h1>
-        <p className="text-xs leading-relaxed text-muted-foreground max-w-2xl">
-          Configure the core AI neural parameters, brand aesthetic, and administrative access for the Atelier network.
+        <h1 className="font-display text-4xl font-medium text-charcoal">Studio Settings</h1>
+        <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground">
+          Configure generation guidance and saved dashboard identity preferences.
         </p>
       </div>
 
-      {/* Grid Settings Section */}
+      {error && (
+        <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+      {message && (
+        <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+          {message}
+        </p>
+      )}
+
       <div className="grid gap-8 lg:grid-cols-12">
-        {/* Left Card: Neural Engine Settings */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-neutral-200/50 p-6 flex flex-col justify-between shadow-soft min-h-[460px]">
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-neutral-200/40 pb-4">
-              <Sliders className="h-4 w-4 text-[#806B4D]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal">Neural Engine Settings</h3>
-            </div>
-
-            <div className="space-y-6">
-              {/* Parameter 1 */}
-              <div className="flex items-start justify-between gap-6">
-                <div className="space-y-1">
-                  <p className="text-xs font-bold text-charcoal leading-tight">High-Fidelity Rendering</p>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    Enables 8K texture mapping and sub-pixel garment weaving details for high-end displays.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setFidelity(!fidelity)}
-                  className={`w-10 h-6 rounded-full p-1 transition-colors duration-200 shrink-0 ${
-                    fidelity ? "bg-charcoal" : "bg-neutral-200"
-                  }`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-                    fidelity ? "translate-x-4" : "translate-x-0"
-                  }`} />
-                </button>
-              </div>
-
-              {/* Parameter 2 */}
-              <div className="flex items-start justify-between gap-6">
-                <div className="space-y-1">
-                  <p className="text-xs font-bold text-charcoal leading-tight">Real-Time Physics</p>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    Calculates fabric drape and collision dynamics at 120fps for fluid virtual movement.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setPhysics(!physics)}
-                  className={`w-10 h-6 rounded-full p-1 transition-colors duration-200 shrink-0 ${
-                    physics ? "bg-charcoal" : "bg-neutral-200"
-                  }`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-                    physics ? "translate-x-4" : "translate-x-0"
-                  }`} />
-                </button>
-              </div>
-
-              {/* Parameter 3 */}
-              <div className="flex items-start justify-between gap-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-charcoal leading-tight">Precision Calibration</p>
-                    <span className="bg-[#806B4D]/10 text-[#806B4D] text-[7px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded">
-                      AI Active
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    Automated adjustment of lighting vectors based on user's ambient environmental data.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setCalibration(!calibration)}
-                  className={`w-10 h-6 rounded-full p-1 transition-colors duration-200 shrink-0 ${
-                    calibration ? "bg-charcoal" : "bg-neutral-200"
-                  }`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-                    calibration ? "translate-x-4" : "translate-x-0"
-                  }`} />
-                </button>
-              </div>
-            </div>
+        <section className="rounded-3xl border border-neutral-200/50 bg-white p-6 shadow-soft lg:col-span-7">
+          <div className="flex items-center gap-2 border-b border-neutral-200/40 pb-4">
+            <Sliders className="h-4 w-4 text-[#806B4D]" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-charcoal">
+              Generation Guidance
+            </h2>
           </div>
-
-          {/* Processing Banner */}
-          <div className="bg-[#FAF9F6] border border-neutral-250/30 rounded-2xl p-4 flex justify-between items-center mt-6">
-            <div className="space-y-1">
-              <span className="text-[8px] font-bold text-neutral-400 uppercase tracking-widest block">
-                Processing Status
-              </span>
-              <p className="text-[10px] text-charcoal leading-normal italic">
-                Neural nodes operating at 98.4% efficiency. Latency optimized.
-              </p>
-            </div>
-            <Sparkles className="h-5 w-5 text-[#806B4D] shrink-0" />
+          <div className="mt-6 space-y-7">
+            {toggles.map((item) => (
+              <div key={item.key} className="flex items-start justify-between gap-6">
+                <div>
+                  <p className="text-xs font-bold text-charcoal">{item.label}</p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+                    {item.description}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() =>
+                    setDraft((current) => ({ ...current, [item.key]: !current[item.key] }))
+                  }
+                  aria-pressed={draft[item.key]}
+                  className={`h-6 w-10 shrink-0 rounded-full p-1 transition-colors ${draft[item.key] ? "bg-charcoal" : "bg-neutral-200"}`}
+                >
+                  <span
+                    className={`block h-4 w-4 rounded-full bg-white transition-transform ${draft[item.key] ? "translate-x-4" : "translate-x-0"}`}
+                  />
+                </button>
+              </div>
+            ))}
           </div>
-        </div>
+          <div className="mt-8 rounded-2xl border border-neutral-200 bg-[#FAF9F6] p-4 text-[10px] leading-relaxed text-muted-foreground">
+            Saved generation settings are read by the backend when a new try-on request is created.
+            Existing generated images are not modified.
+          </div>
+        </section>
 
-        {/* Right Stack Area */}
-        <div className="lg:col-span-5 flex flex-col justify-between gap-6">
-          {/* Brand Identity Card */}
-          <div className="bg-white rounded-3xl border border-neutral-200/50 p-6 space-y-6 shadow-soft flex-1">
+        <section className="space-y-6 lg:col-span-5">
+          <div className="rounded-3xl border border-neutral-200/50 bg-white p-6 shadow-soft">
             <div className="flex items-center gap-2 border-b border-neutral-200/40 pb-4">
               <Palette className="h-4 w-4 text-[#806B4D]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal">Brand Identity</h3>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-charcoal">
+                Dashboard Identity
+              </h2>
             </div>
-
-            {/* Logo File upload */}
-            <div className="space-y-2">
-              <label className="block text-[8px] font-bold text-neutral-400 uppercase tracking-widest">
-                Studio Logo
-              </label>
-              <div className="flex items-center justify-between border border-neutral-200 rounded-xl p-3 bg-[#FAF9F6]">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 bg-charcoal text-white rounded-lg flex items-center justify-center font-bold text-sm">
-                    A
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-charcoal leading-tight">Studio_Logo_Primary.svg</p>
-                    <p className="text-[8px] text-neutral-400 mt-0.5">Uploaded 2 days ago • 12kb</p>
-                  </div>
+            <div className="mt-6 space-y-6">
+              <div>
+                <label className="text-[8px] font-bold uppercase tracking-widest text-neutral-400">
+                  Theme Accent
+                </label>
+                <div className="mt-3 flex gap-3">
+                  {(["gold", "black", "red"] as const).map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setDraft((current) => ({ ...current, themeAccent: color }))}
+                      aria-label={`${color} accent`}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full ${color === "gold" ? "bg-[#806B4D]" : color === "black" ? "bg-charcoal" : "bg-red-600"}`}
+                    >
+                      {draft.themeAccent === color && <Check className="h-4 w-4 text-white" />}
+                    </button>
+                  ))}
                 </div>
-                <button className="text-neutral-400 hover:text-charcoal transition p-1.5" aria-label="Download Logo">
-                  <Download className="h-4 w-4" />
-                </button>
               </div>
-            </div>
-
-            {/* Accent theme */}
-            <div className="space-y-2">
-              <label className="block text-[8px] font-bold text-neutral-400 uppercase tracking-widest">
-                Theme Accent
+              <label className="block">
+                <span className="text-[8px] font-bold uppercase tracking-widest text-neutral-400">
+                  Typography
+                </span>
+                <select
+                  value={draft.typography}
+                  onChange={(event) =>
+                    setDraft((current) => ({
+                      ...current,
+                      typography: event.target.value as AdminStudioSettingsInput["typography"],
+                    }))
+                  }
+                  className="mt-2 w-full rounded-xl border border-neutral-200 bg-[#FAF9F6] px-4 py-3 text-[10px] font-bold text-charcoal"
+                >
+                  <option>Libre Caslon Text</option>
+                  <option>Inter</option>
+                  <option>Georgia</option>
+                </select>
               </label>
-              <div className="flex items-center gap-3 pt-1">
-                {[
-                  { id: "gold", colorClass: "bg-[#806B4D]" },
-                  { id: "black", colorClass: "bg-[#1C1C1C]" },
-                  { id: "red", colorClass: "bg-red-600" },
-                ].map((color) => (
-                  <button
-                    key={color.id}
-                    onClick={() => setThemeAccent(color.id as any)}
-                    className={`h-7 w-7 rounded-full ${color.colorClass} border border-neutral-250 flex items-center justify-center transition hover:scale-105`}
-                  >
-                    {themeAccent === color.id && <Check className="h-3.5 w-3.5 text-white" />}
-                  </button>
-                ))}
-                <button className="h-7 w-7 rounded-full border border-neutral-200 border-dashed text-neutral-400 hover:text-charcoal transition flex items-center justify-center">
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Font Typography selection */}
-            <div className="space-y-2">
-              <label className="block text-[8px] font-bold text-neutral-400 uppercase tracking-widest">
-                Typography
-              </label>
-              <div className="relative">
-                <button className="w-full flex items-center justify-between border border-neutral-200 rounded-xl px-4 py-3 bg-[#FAF9F6] text-[10px] font-bold text-charcoal text-left">
-                  <span>{typography}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-neutral-500" />
-                </button>
-              </div>
             </div>
           </div>
 
-          {/* Save / Apply Changes Card */}
-          <div className="bg-[#806B4D]/10 border border-[#806B4D]/25 rounded-3xl p-6 space-y-4 shadow-soft">
-            <h3 className="font-display text-xl text-[#806B4D] font-semibold">Apply changes to global dashboard?</h3>
-            <p className="text-[10px] text-[#806B4D] leading-relaxed font-medium">
-              This will update all instances across the Studio environment including mobile applications.
+          <div className="rounded-3xl border border-[#806B4D]/25 bg-[#806B4D]/10 p-6">
+            <h2 className="font-display text-xl font-semibold text-[#806B4D]">
+              Apply studio changes?
+            </h2>
+            <p className="mt-2 text-[10px] leading-relaxed text-[#806B4D]">
+              Changes are stored in MongoDB and used by subsequent backend requests.
             </p>
-            <div className="flex gap-3 pt-2">
-              <button className="flex-1 bg-charcoal text-white hover:bg-[#6c5a40] text-[9px] font-bold uppercase tracking-wider py-3.5 rounded-xl transition">
-                Save Changes
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={save}
+                disabled={saving || loading}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-charcoal py-3.5 text-[9px] font-bold uppercase tracking-wider text-white disabled:opacity-50"
+              >
+                <Save className="h-3.5 w-3.5" />
+                {saving ? "Saving…" : "Save Changes"}
               </button>
-              <button className="flex-1 border border-charcoal/30 text-charcoal hover:bg-charcoal/5 text-[9px] font-bold uppercase tracking-wider py-3.5 rounded-xl transition">
+              <button
+                type="button"
+                onClick={discard}
+                disabled={!saved || saving}
+                className="flex-1 rounded-xl border border-charcoal/30 py-3.5 text-[9px] font-bold uppercase tracking-wider text-charcoal disabled:opacity-50"
+              >
                 Discard
               </button>
             </div>
+            {saved?.updatedAt && (
+              <p className="mt-4 text-[9px] text-[#806B4D]">
+                Last saved {new Date(saved.updatedAt).toLocaleString()} by {saved.updatedBy}
+              </p>
+            )}
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* 4. Team Access Section */}
-      <div className="bg-white rounded-3xl border border-neutral-200/50 shadow-soft overflow-hidden">
-        <div className="p-6 border-b border-neutral-150/60 flex justify-between items-center">
-          <h3 className="font-display text-2xl text-charcoal font-medium">Team Access</h3>
-          <button className="text-[9px] font-bold uppercase tracking-wider text-[#806B4D] hover:underline flex items-center gap-1.5" type="button">
-            <UserPlus className="h-3.5 w-3.5" />
-            <span>Invite New Member</span>
-          </button>
+      <section className="overflow-hidden rounded-3xl border border-neutral-200/50 bg-white shadow-soft">
+        <div className="flex items-center gap-2 border-b border-neutral-200 p-6">
+          <UserRound className="h-4 w-4 text-[#806B4D]" />
+          <h2 className="font-display text-2xl font-medium text-charcoal">
+            Administrator Accounts
+          </h2>
         </div>
-
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-neutral-150/60 bg-neutral-50/50 text-[9px] font-bold uppercase tracking-wider text-neutral-400">
-                <th className="p-5 pl-8">Admin User</th>
+              <tr className="border-b border-neutral-200 bg-neutral-50/50 text-[9px] font-bold uppercase tracking-wider text-neutral-400">
+                <th className="p-5 pl-8">Username</th>
                 <th className="p-5">Role</th>
                 <th className="p-5">Status</th>
-                <th className="p-5">Last Active</th>
-                <th className="p-5 pr-8 text-right">Action</th>
+                <th className="p-5 pr-8">Last Login</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-150/60 text-xs font-semibold text-charcoal">
-              {team.map((member, idx) => (
-                <tr key={idx} className="hover:bg-neutral-50/20 transition">
-                  <td className="p-5 pl-8 flex items-center gap-4">
-                    <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-100 shrink-0">
-                      <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-charcoal leading-tight">{member.name}</p>
-                      <p className="text-[9px] text-muted-foreground uppercase mt-0.5 font-bold">{member.email}</p>
-                    </div>
-                  </td>
+            <tbody className="divide-y divide-neutral-200 text-xs font-semibold text-charcoal">
+              {saved?.administrators.map((admin) => (
+                <tr key={admin.username}>
+                  <td className="p-5 pl-8">{admin.username}</td>
+                  <td className="p-5 text-neutral-500">Administrator</td>
                   <td className="p-5">
-                    <span className="bg-neutral-100 text-neutral-500 text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                      {member.role}
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[9px] uppercase ${admin.isActive ? "bg-emerald-50 text-emerald-600" : "bg-neutral-100 text-neutral-500"}`}
+                    >
+                      {admin.isActive ? "Active" : "Disabled"}
                     </span>
                   </td>
-                  <td className="p-5 flex items-center gap-1.5">
-                    <span className={`h-1.5 w-1.5 rounded-full bg-current ${member.statusClass}`} />
-                    <span className="font-semibold text-neutral-500">{member.status}</span>
-                  </td>
-                  <td className="p-5 text-neutral-500 font-medium">{member.active}</td>
-                  <td className="p-5 pr-8 text-right">
-                    <button className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-charcoal transition" aria-label="Settings Action">
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
+                  <td className="p-5 pr-8 text-neutral-500">
+                    {admin.lastLoginAt
+                      ? new Date(admin.lastLoginAt).toLocaleString()
+                      : "Not recorded"}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="pt-8 border-t border-neutral-200/40 text-center text-[9px] uppercase tracking-widest font-semibold text-neutral-400">
-        AI Fit Studio © 2024 — Proprietary Algorithms Active
-      </footer>
+        {!loading && !saved?.administrators.length && (
+          <p className="p-8 text-center text-sm text-muted-foreground">
+            No administrator accounts found.
+          </p>
+        )}
+      </section>
     </div>
   );
 }

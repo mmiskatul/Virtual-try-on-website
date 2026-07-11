@@ -1,243 +1,266 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import {
-  Plus,
-  Grid,
-  List,
-  Edit2,
-  BarChart2,
-  MoreVertical,
-  ChevronLeft,
-  ChevronRight,
-  ArrowUpRight,
-  Hourglass,
-  Cloud,
-} from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { BarChart2, Download, Edit2, Plus, Search, Sparkles } from "lucide-react";
 
-import p1 from "@/assets/p1.jpg";
-import p3 from "@/assets/p3.jpg";
-import p5 from "@/assets/p5.jpg";
-import p7 from "@/assets/p7.jpg";
+import { useAdminAuth } from "@/components/admin/admin-auth";
+import { getAdminDashboard, resolveAssetUrl, type AdminDashboardData } from "@/lib/api";
+
+type StatusFilter = "all" | "live" | "inactive";
+
+function exportProducts(data: AdminDashboardData) {
+  const rows = [
+    ["id", "name", "category", "gender", "status", "price", "try_ons", "last_try_on_at"],
+    ...data.products.map((product) => [
+      product.id,
+      product.name,
+      product.category,
+      product.gender,
+      product.isActive === false ? "inactive" : "live",
+      String(product.price),
+      String(product.tryOnCount),
+      product.lastTryOnAt ?? "",
+    ]),
+  ];
+  const csv = rows
+    .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+    .join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "ai-fit-products.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function AdminCollectionsPage() {
-  const [activeTab, setActiveTab] = useState<"all" | "live" | "drafts" | "archived">("all");
+  const searchParams = useSearchParams();
+  const { token } = useAdminAuth();
+  const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
+  const [filter, setFilter] = useState<StatusFilter>("all");
+  const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const items = [
-    {
-      id: "AI-88293-S",
-      name: "Silk Bias Midi Dress",
-      category: "Evening Wear",
-      status: "Live",
-      modified: "Oct 24, 2023",
-      image: p5.src,
-    },
-    {
-      id: "AI-10294-B",
-      name: "Structured Wool Blazer",
-      category: "Outerwear",
-      status: "Live",
-      modified: "Oct 21, 2023",
-      image: p7.src,
-    },
-    {
-      id: "AI-55210-K",
-      name: "Cashmere Wrap Knit",
-      category: "Knitwear",
-      status: "Draft",
-      modified: "Oct 19, 2023",
-      image: p1.src,
-    },
-    {
-      id: "AI-92183-P",
-      name: "Vegan Leather Trousers",
-      category: "Bottoms",
-      status: "Live",
-      modified: "Oct 15, 2023",
-      image: p3.src,
-    },
-  ];
+  useEffect(() => {
+    setQuery(searchParams.get("q") ?? "");
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    getAdminDashboard(token)
+      .then((data) => active && setDashboard(data))
+      .catch((loadError) => {
+        if (active)
+          setError(loadError instanceof Error ? loadError.message : "Could not load collections.");
+      })
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  const products = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return (dashboard?.products ?? []).filter((product) => {
+      const matchesStatus =
+        filter === "all" ||
+        (filter === "live" && product.isActive !== false) ||
+        (filter === "inactive" && product.isActive === false);
+      const matchesQuery =
+        !normalizedQuery ||
+        product.name.toLowerCase().includes(normalizedQuery) ||
+        product.id.toLowerCase().includes(normalizedQuery) ||
+        product.category.toLowerCase().includes(normalizedQuery);
+      return matchesStatus && matchesQuery;
+    });
+  }, [dashboard, filter, query]);
+
+  const topProduct = [...(dashboard?.products ?? [])].sort(
+    (a, b) => b.tryOnCount - a.tryOnCount,
+  )[0];
 
   return (
-    <div className="px-8 py-8 space-y-8">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="space-y-1.5 max-w-2xl">
-          <h1 className="font-display text-4xl text-charcoal font-medium">Collections</h1>
+    <div className="space-y-8 px-5 py-8 sm:px-8">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+        <div className="max-w-2xl space-y-1.5">
+          <h1 className="font-display text-4xl font-medium text-charcoal">Collections</h1>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Manage your virtual inventory, toggle visibility for AI try-on sessions, and track performance across seasonal lookbooks.
+            Manage the products available to customers and review their try-on usage.
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <button className="bg-white border border-neutral-200 hover:border-charcoal/50 text-charcoal text-xs font-bold uppercase tracking-wider px-5 py-3.5 rounded-xl transition">
-            Export Report
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            disabled={!dashboard}
+            onClick={() => dashboard && exportProducts(dashboard)}
+            className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-charcoal disabled:opacity-50"
+          >
+            <Download className="h-3.5 w-3.5" /> Export
           </button>
           <Link
             href="/admin/add"
-            className="inline-flex items-center gap-1.5 bg-charcoal text-white hover:bg-[#806B4D] text-xs font-bold uppercase tracking-wider px-5 py-3.5 rounded-xl transition"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#806B4D]"
           >
-            <Plus className="h-3.5 w-3.5" />
-            <span>New Collection</span>
+            <Plus className="h-3.5 w-3.5" /> New Product
           </Link>
         </div>
       </div>
 
-      {/* Tabs bar */}
-      <div className="flex justify-between items-center border-b border-neutral-200/50 pb-px">
-        <div className="flex gap-8 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          {[
-            { id: "all", label: "All", count: 128 },
-            { id: "live", label: "Live", count: 42 },
-            { id: "drafts", label: "Drafts", count: 14 },
-            { id: "archived", label: "Archived", count: 72 },
-          ].map((tab) => (
+      {error && (
+        <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
+      <div className="flex flex-col justify-between gap-4 border-b border-neutral-200 sm:flex-row sm:items-end">
+        <div className="flex gap-6">
+          {(["all", "live", "inactive"] as StatusFilter[]).map((item) => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-4 relative transition ${
-                activeTab === tab.id ? "text-charcoal" : "hover:text-charcoal"
-              }`}
+              key={item}
+              type="button"
+              onClick={() => setFilter(item)}
+              className={`relative pb-3 text-[10px] font-bold uppercase tracking-wider ${filter === item ? "text-charcoal" : "text-neutral-400"}`}
             >
-              <span>{tab.label}</span>
-              <span className="ml-1.5 text-[9px] text-neutral-400 font-semibold">{tab.count}</span>
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-charcoal" />
+              {item}{" "}
+              {item === "all"
+                ? (dashboard?.totalProducts ?? 0)
+                : item === "live"
+                  ? (dashboard?.activeProducts ?? 0)
+                  : (dashboard?.inactiveProducts ?? 0)}
+              {filter === item && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-charcoal" />
               )}
             </button>
           ))}
         </div>
-        <div className="flex gap-1.5 text-neutral-400 pb-2">
-          <button className="p-1 rounded hover:bg-neutral-100 transition" aria-label="Grid View">
-            <Grid className="h-4 w-4" />
-          </button>
-          <button className="p-1 rounded bg-neutral-100 text-charcoal transition" aria-label="List View">
-            <List className="h-4 w-4" />
-          </button>
-        </div>
+        <label className="mb-2 flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2">
+          <Search className="h-3.5 w-3.5 text-neutral-400" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search products"
+            className="bg-transparent text-xs outline-none"
+          />
+        </label>
       </div>
 
-      {/* Table Container */}
-      <div className="bg-white rounded-3xl border border-neutral-200/50 shadow-soft overflow-hidden">
+      <div className="overflow-hidden rounded-3xl border border-neutral-200/50 bg-white shadow-soft">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-neutral-150/60 bg-neutral-50/50 text-[9px] font-bold uppercase tracking-wider text-neutral-400">
-                <th className="p-5 pl-8">Apparel Item</th>
+              <tr className="border-b border-neutral-200 bg-neutral-50/50 text-[9px] font-bold uppercase tracking-wider text-neutral-400">
+                <th className="p-5 pl-8">Product</th>
                 <th className="p-5">Category</th>
                 <th className="p-5">Status</th>
-                <th className="p-5">Modified</th>
+                <th className="p-5">Try-ons</th>
+                <th className="p-5">Last used</th>
                 <th className="p-5 pr-8 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-150/60 text-xs font-semibold text-charcoal">
-              {items.map((item) => (
-                <tr key={item.id} className="hover:bg-neutral-50/20 transition">
-                  <td className="p-5 pl-8 flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg overflow-hidden border border-neutral-100 shrink-0">
-                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                    </div>
+            <tbody className="divide-y divide-neutral-200 text-xs font-semibold text-charcoal">
+              {products.map((product) => (
+                <tr key={product.id} className="transition hover:bg-neutral-50/40">
+                  <td className="flex items-center gap-4 p-5 pl-8">
+                    <img
+                      src={resolveAssetUrl(product.image)}
+                      alt={product.name}
+                      className="h-11 w-11 rounded-lg object-cover"
+                    />
                     <div>
-                      <p className="font-semibold text-charcoal leading-tight">{item.name}</p>
-                      <p className="text-[9px] text-muted-foreground uppercase mt-0.5 font-bold">ID: {item.id}</p>
+                      <p>{product.name}</p>
+                      <p className="mt-0.5 text-[9px] uppercase text-muted-foreground">
+                        ID: {product.id}
+                      </p>
                     </div>
                   </td>
-                  <td className="p-5 text-neutral-500 font-medium">{item.category}</td>
+                  <td className="p-5 font-medium capitalize text-neutral-500">
+                    {product.category}
+                  </td>
                   <td className="p-5">
                     <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                        item.status === "Live"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "bg-neutral-100 text-neutral-500"
-                      }`}
+                      className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase ${product.isActive === false ? "bg-neutral-100 text-neutral-500" : "bg-emerald-50 text-emerald-600"}`}
                     >
-                      <span className={`h-1 w-1 rounded-full ${item.status === "Live" ? "bg-emerald-500" : "bg-neutral-400"}`} />
-                      {item.status}
+                      {product.isActive === false ? "Inactive" : "Live"}
                     </span>
                   </td>
-                  <td className="p-5 text-neutral-500 font-medium">{item.modified}</td>
+                  <td className="p-5 text-neutral-500">{product.tryOnCount}</td>
+                  <td className="p-5 text-neutral-500">
+                    {product.lastTryOnAt
+                      ? new Date(product.lastTryOnAt).toLocaleDateString()
+                      : "Never"}
+                  </td>
                   <td className="p-5 pr-8 text-right">
-                    <div className="inline-flex items-center gap-1 text-neutral-400">
-                      <button className="p-2 hover:text-charcoal hover:bg-neutral-50 rounded-lg transition" aria-label="Edit">
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </button>
-                      <button className="p-2 hover:text-charcoal hover:bg-neutral-50 rounded-lg transition" aria-label="Analytics">
-                        <BarChart2 className="h-3.5 w-3.5" />
-                      </button>
-                      <button className="p-2 hover:text-charcoal hover:bg-neutral-50 rounded-lg transition" aria-label="More">
-                        <MoreVertical className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    <Link
+                      href={`/admin/products/${product.id}`}
+                      aria-label={`Edit ${product.name}`}
+                      className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </Link>
+                    <Link
+                      href="/admin/analytics"
+                      aria-label="View analytics"
+                      className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
+                    >
+                      <BarChart2 className="h-3.5 w-3.5" />
+                    </Link>
+                    <Link
+                      href={`/admin/try-on?product=${product.id}`}
+                      aria-label={`Virtually try on ${product.name}`}
+                      className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        {/* Table Footer */}
-        <div className="p-5 px-8 flex justify-between items-center border-t border-neutral-150/60 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-          <span>Showing 1 to 10 of 128 items</span>
-          <div className="flex items-center gap-2 text-charcoal">
-            <button className="p-2 hover:bg-neutral-100 rounded-lg transition"><ChevronLeft className="h-3.5 w-3.5" /></button>
-            <span className="h-7 w-7 rounded-lg bg-charcoal text-white flex items-center justify-center cursor-pointer">1</span>
-            <span className="h-7 w-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center cursor-pointer">2</span>
-            <span className="h-7 w-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center cursor-pointer">3</span>
-            <button className="p-2 hover:bg-neutral-100 rounded-lg transition"><ChevronRight className="h-3.5 w-3.5" /></button>
-          </div>
+        {!loading && products.length === 0 && (
+          <p className="p-8 text-center text-sm text-muted-foreground">
+            No products match this view.
+          </p>
+        )}
+        {loading && (
+          <p className="p-8 text-center text-sm text-muted-foreground">Loading products…</p>
+        )}
+        <div className="border-t border-neutral-200 px-8 py-5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+          Showing {products.length} of {dashboard?.totalProducts ?? 0} products
         </div>
       </div>
 
-      {/* Bottom KPI Cards Section */}
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Top Performer */}
-        <div className="bg-white rounded-3xl border border-neutral-200/50 p-6 flex flex-col justify-between shadow-soft min-h-[140px]">
-          <div className="flex justify-between items-start">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Top Performer</h4>
-            <ArrowUpRight className="h-4 w-4 text-[#806B4D]" />
-          </div>
-          <div className="flex items-center gap-3 mt-4">
-            <div className="h-10 w-10 rounded-lg overflow-hidden border border-neutral-100 shrink-0">
-              <img src={p5.src} alt="Top performer" className="h-full w-full object-cover" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-charcoal leading-tight">Silk Bias Midi Dress</p>
-              <p className="text-lg font-display font-light text-[#806B4D] mt-0.5">4.2k Tries</p>
-            </div>
-          </div>
+        <div className="rounded-3xl border border-neutral-200/50 bg-white p-6 shadow-soft">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+            Top Performer
+          </p>
+          <p className="mt-4 text-sm font-bold text-charcoal">
+            {topProduct?.name ?? "No activity yet"}
+          </p>
+          <p className="mt-1 font-display text-2xl text-[#806B4D]">
+            {topProduct?.tryOnCount ?? 0} tries
+          </p>
         </div>
-
-        {/* Processing Queue */}
-        <div className="bg-white rounded-3xl border border-neutral-200/50 p-6 flex flex-col justify-between shadow-soft min-h-[140px]">
-          <div className="flex justify-between items-start">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Processing Queue</h4>
-            <Hourglass className="h-4 w-4 text-[#806B4D]" />
-          </div>
-          <div className="space-y-2 mt-4">
-            <div className="w-full bg-neutral-100 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-[#806B4D] h-full rounded-full w-[60%]" />
-            </div>
-            <p className="text-[10px] font-semibold text-muted-foreground">AI Model Generation: 8 items remaining</p>
-          </div>
+        <div className="rounded-3xl border border-neutral-200/50 bg-white p-6 shadow-soft">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+            Active Inventory
+          </p>
+          <p className="mt-4 font-display text-3xl text-charcoal">
+            {dashboard?.activeProducts ?? 0}
+          </p>
         </div>
-
-        {/* Storage Capacity */}
-        <div className="bg-white rounded-3xl border border-neutral-200/50 p-6 flex flex-col justify-between shadow-soft min-h-[140px]">
-          <div className="flex justify-between items-start">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Storage Capacity</h4>
-            <Cloud className="h-4 w-4 text-[#806B4D]" />
-          </div>
-          <div className="space-y-1 mt-4">
-            <p className="text-2xl font-display font-light text-charcoal">82%</p>
-            <p className="text-[10px] font-semibold text-muted-foreground">2.4 TB of 3.0 TB used</p>
-          </div>
+        <div className="rounded-3xl border border-neutral-200/50 bg-white p-6 shadow-soft">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+            Total Try-Ons
+          </p>
+          <p className="mt-4 font-display text-3xl text-charcoal">{dashboard?.totalTryOns ?? 0}</p>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="pt-8 border-t border-neutral-200/40 text-center text-[9px] uppercase tracking-widest font-semibold text-neutral-400">
-        AI Fit Studio © 2024 — Proprietary Algorithms Active
-      </footer>
     </div>
   );
 }

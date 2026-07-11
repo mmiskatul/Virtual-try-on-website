@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react";
 
@@ -38,6 +38,7 @@ export default function TryOn() {
 function TryOnContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   const fileRef = useRef<HTMLInputElement>(null);
   const initialId = searchParams.get("product");
   const initialSize = searchParams.get("size") ?? "";
@@ -193,7 +194,7 @@ function TryOnContent() {
       window.clearInterval(progress);
       setStep(LOADING_STEPS.length);
       sessionStorage.setItem("tryon:lastResultId", result.id);
-      router.push(`/result?id=${result.id}`);
+      router.push(`${pathname.startsWith("/admin") ? "/admin/result" : "/result"}?id=${result.id}`);
     } catch (err) {
       window.clearInterval(progress);
       setLoading(false);

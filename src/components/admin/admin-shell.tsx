@@ -12,8 +12,7 @@ import {
   Settings,
   Shield,
   Search,
-  HelpCircle,
-  Bell,
+  Sparkles,
 } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
@@ -26,6 +25,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [adminSearch, setAdminSearch] = useState("");
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,6 +46,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
   async function handleLogout() {
     await logout();
     router.replace("/admin");
+  }
+
+  function handleAdminSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = adminSearch.trim();
+    router.push(query ? `/admin/collection?q=${encodeURIComponent(query)}` : "/admin/collection");
   }
 
   if (loading) {
@@ -123,21 +129,58 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="space-y-10">
           {/* Logo */}
           <div className="space-y-1">
-            <h1 className="font-display text-xl text-charcoal font-semibold tracking-tight">AI Fit Studio</h1>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Admin Dashboard</p>
+            <h1 className="font-display text-xl text-charcoal font-semibold tracking-tight">
+              AI Fit Studio
+            </h1>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              Admin Dashboard
+            </p>
           </div>
 
           {/* Navigation */}
           <nav className="space-y-2">
             {[
-              { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-              { label: "Collections", href: "/admin/collection", icon: Layers3 },
-              { label: "Try-On Sessions", href: "/admin/history", icon: UserCheck },
-              { label: "Analytics", href: "/admin/analytics", icon: TrendingUp },
-              { label: "Settings", href: "/admin/settings", icon: Settings },
+              {
+                label: "Overview",
+                href: "/admin/dashboard",
+                icon: LayoutDashboard,
+                routes: ["/admin/dashboard"],
+              },
+              {
+                label: "Collections",
+                href: "/admin/collection",
+                icon: Layers3,
+                routes: ["/admin/collection", "/admin/products", "/admin/add"],
+              },
+              {
+                label: "Virtual Try-On",
+                href: "/admin/try-on",
+                icon: Sparkles,
+                routes: ["/admin/try-on", "/admin/result"],
+              },
+              {
+                label: "Try-On Sessions",
+                href: "/admin/history",
+                icon: UserCheck,
+                routes: ["/admin/history"],
+              },
+              {
+                label: "Analytics",
+                href: "/admin/analytics",
+                icon: TrendingUp,
+                routes: ["/admin/analytics"],
+              },
+              {
+                label: "Settings",
+                href: "/admin/settings",
+                icon: Settings,
+                routes: ["/admin/settings"],
+              },
             ].map((item) => {
               const Icon = item.icon;
-              const active = pathname === item.href;
+              const active = item.routes.some(
+                (route) => pathname === route || pathname.startsWith(`${route}/`),
+              );
               return (
                 <Link
                   key={item.label}
@@ -184,47 +227,40 @@ export function AdminShell({ children }: { children: ReactNode }) {
         {/* Header */}
         <header className="h-16 border-b border-border/40 bg-white flex items-center justify-between px-8">
           {/* Search bar */}
-          <div className="flex items-center bg-neutral-100 rounded-lg px-3 py-1.5 border border-transparent focus-within:border-charcoal/20 max-w-xs w-full">
+          <form
+            onSubmit={handleAdminSearch}
+            className="flex items-center bg-neutral-100 rounded-lg px-3 py-1.5 border border-transparent focus-within:border-charcoal/20 max-w-xs w-full"
+          >
             <Search className="h-3.5 w-3.5 text-muted-foreground mr-2 shrink-0" />
             <input
               type="text"
-              placeholder="Search analytics or garments..."
+              placeholder="Search products..."
+              value={adminSearch}
+              onChange={(event) => setAdminSearch(event.target.value)}
               className="bg-transparent text-[9px] tracking-wider uppercase focus:outline-none w-full text-charcoal placeholder-neutral-400 font-semibold"
             />
-          </div>
+          </form>
 
           {/* Right Controls */}
           <div className="flex items-center gap-6">
-            <button className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-charcoal transition">
-              <HelpCircle className="h-4 w-4" />
-              <span>Support</span>
-            </button>
-
-            <button className="relative text-muted-foreground hover:text-charcoal transition">
-              <Bell className="h-4.5 w-4.5" />
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 border border-white" />
-            </button>
-
             <div className="flex items-center gap-3 pl-4 border-l border-neutral-200">
               <div className="text-right">
-                <p className="text-xs font-bold text-charcoal uppercase tracking-wider">Admin</p>
-                <p className="text-[9px] font-semibold text-muted-foreground uppercase">System Root</p>
+                <p className="text-xs font-bold text-charcoal uppercase tracking-wider">
+                  {username ?? "Admin"}
+                </p>
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase">
+                  System Root
+                </p>
               </div>
-              <div className="h-8 w-8 rounded-full overflow-hidden border border-neutral-200">
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
-                  alt="Admin profile"
-                  className="w-full h-full object-cover"
-                />
+              <div className="grid h-8 w-8 place-items-center rounded-full border border-neutral-200 bg-charcoal text-[10px] font-bold uppercase text-white">
+                {(username ?? "A").slice(0, 2)}
               </div>
             </div>
           </div>
         </header>
 
         {/* Children */}
-        <main className="flex-1 bg-[#FAF9F6]">
-          {children}
-        </main>
+        <main className="flex-1 bg-[#FAF9F6]">{children}</main>
       </div>
     </div>
   );

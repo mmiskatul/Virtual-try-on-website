@@ -10,9 +10,16 @@ interface Props {
   selected?: boolean;
   onSelect?: (p: Product) => void;
   variant?: "browse" | "select";
+  tryOnHrefBase?: string;
 }
 
-export function ProductCard({ product, selected, onSelect, variant = "browse" }: Props) {
+export function ProductCard({
+  product,
+  selected,
+  onSelect,
+  variant = "browse",
+  tryOnHrefBase = "/try-on",
+}: Props) {
   const isSelect = variant === "select";
 
   return (
@@ -52,7 +59,7 @@ export function ProductCard({ product, selected, onSelect, variant = "browse" }:
         </div>
         {!isSelect && (
           <Link
-            href={`/try-on?product=${product.id}`}
+            href={`${tryOnHrefBase}?product=${product.id}`}
             className="mt-2 flex w-full items-center justify-center rounded-full bg-charcoal px-4 py-2.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
           >
             Try On

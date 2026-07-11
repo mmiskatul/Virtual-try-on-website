@@ -8,6 +8,8 @@ export interface TryOnResult {
   garment_image_url: string;
   result_image_url: string;
   prompt: string;
+  selected_size?: string | null;
+  user_body_size?: string | null;
   image_details?: {
     provider: string;
     model: string;
@@ -52,6 +54,55 @@ export interface AdminDashboardProduct extends Product {
   lastTryOnAt: string | null;
 }
 
+export interface AdminAnalyticsData {
+  periodDays: number;
+  periodStart: string;
+  periodEnd: string;
+  totalTryOns: number;
+  periodTryOns: number;
+  previousPeriodTryOns: number;
+  periodChangePercent: number | null;
+  totalProducts: number;
+  activeProducts: number;
+  uniqueProductsTried: number;
+  resultStorageBytes: number;
+  resultsWithMetadata: number;
+  latestTryOnAt: string | null;
+  dailyTryOns: Array<{ date: string; count: number }>;
+  categoryPerformance: Array<{ category: string; tryOnCount: number; percentage: number }>;
+  topProducts: Array<{
+    id: string;
+    name: string;
+    category: string;
+    imageUrl: string;
+    tryOnCount: number;
+  }>;
+}
+
+export interface AdminStudioSettings {
+  highFidelityRendering: boolean;
+  realTimePhysics: boolean;
+  precisionCalibration: boolean;
+  themeAccent: "gold" | "black" | "red";
+  typography: "Libre Caslon Text" | "Inter" | "Georgia";
+  updatedAt: string | null;
+  updatedBy: string | null;
+  administrators: Array<{
+    username: string;
+    isActive: boolean;
+    lastLoginAt: string | null;
+  }>;
+}
+
+export type AdminStudioSettingsInput = Pick<
+  AdminStudioSettings,
+  | "highFidelityRendering"
+  | "realTimePhysics"
+  | "precisionCalibration"
+  | "themeAccent"
+  | "typography"
+>;
+
 interface BackendProduct {
   id: string;
   name: string;
@@ -92,6 +143,50 @@ interface BackendAdminDashboardData {
     garment_image_url: string;
     result_image_url: string;
     created_at: string;
+  }>;
+}
+
+interface BackendAdminAnalyticsData {
+  period_days: number;
+  period_start: string;
+  period_end: string;
+  total_tryons: number;
+  period_tryons: number;
+  previous_period_tryons: number;
+  period_change_percent: number | null;
+  total_products: number;
+  active_products: number;
+  unique_products_tried: number;
+  result_storage_bytes: number;
+  results_with_metadata: number;
+  latest_tryon_at: string | null;
+  daily_tryons: Array<{ date: string; count: number }>;
+  category_performance: Array<{
+    category: string;
+    try_on_count: number;
+    percentage: number;
+  }>;
+  top_products: Array<{
+    id: string;
+    name: string;
+    category: string;
+    image_url: string;
+    try_on_count: number;
+  }>;
+}
+
+interface BackendAdminStudioSettings {
+  high_fidelity_rendering: boolean;
+  real_time_physics: boolean;
+  precision_calibration: boolean;
+  theme_accent: AdminStudioSettings["themeAccent"];
+  typography: AdminStudioSettings["typography"];
+  updated_at: string | null;
+  updated_by: string | null;
+  administrators: Array<{
+    username: string;
+    is_active: boolean;
+    last_login_at: string | null;
   }>;
 }
 
@@ -219,6 +314,54 @@ function normalizeAdminDashboardData(data: BackendAdminDashboardData): AdminDash
   };
 }
 
+function normalizeAdminAnalyticsData(data: BackendAdminAnalyticsData): AdminAnalyticsData {
+  return {
+    periodDays: data.period_days,
+    periodStart: data.period_start,
+    periodEnd: data.period_end,
+    totalTryOns: data.total_tryons,
+    periodTryOns: data.period_tryons,
+    previousPeriodTryOns: data.previous_period_tryons,
+    periodChangePercent: data.period_change_percent,
+    totalProducts: data.total_products,
+    activeProducts: data.active_products,
+    uniqueProductsTried: data.unique_products_tried,
+    resultStorageBytes: data.result_storage_bytes,
+    resultsWithMetadata: data.results_with_metadata,
+    latestTryOnAt: data.latest_tryon_at,
+    dailyTryOns: data.daily_tryons,
+    categoryPerformance: data.category_performance.map((item) => ({
+      category: item.category,
+      tryOnCount: item.try_on_count,
+      percentage: item.percentage,
+    })),
+    topProducts: data.top_products.map((item) => ({
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      imageUrl: item.image_url,
+      tryOnCount: item.try_on_count,
+    })),
+  };
+}
+
+function normalizeAdminStudioSettings(data: BackendAdminStudioSettings): AdminStudioSettings {
+  return {
+    highFidelityRendering: data.high_fidelity_rendering,
+    realTimePhysics: data.real_time_physics,
+    precisionCalibration: data.precision_calibration,
+    themeAccent: data.theme_accent,
+    typography: data.typography,
+    updatedAt: data.updated_at,
+    updatedBy: data.updated_by,
+    administrators: data.administrators.map((item) => ({
+      username: item.username,
+      isActive: item.is_active,
+      lastLoginAt: item.last_login_at,
+    })),
+  };
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL.replace(/\/$/, "")}${path}`, {
     ...options,
@@ -270,7 +413,6 @@ export async function getProducts(): Promise<Product[]> {
   }
 }
 
-
 export async function getProduct(productId: string): Promise<Product | null> {
   try {
     const data = await request<BackendProduct>(`/api/products/${productId}`);
@@ -279,7 +421,6 @@ export async function getProduct(productId: string): Promise<Product | null> {
     return null;
   }
 }
-
 
 export async function uploadUserPhoto(file: File): Promise<string> {
   const formData = new FormData();
@@ -317,10 +458,7 @@ export async function getAdminProducts(token: string | null): Promise<Product[]>
   return data.map(normalizeProduct);
 }
 
-export async function getAdminProduct(
-  productId: string,
-  token: string | null,
-): Promise<Product> {
+export async function getAdminProduct(productId: string, token: string | null): Promise<Product> {
   const data = await adminRequest<BackendProduct>(`/api/admin/products/${productId}`, token);
   return normalizeProduct(data);
 }
@@ -328,6 +466,39 @@ export async function getAdminProduct(
 export async function getAdminDashboard(token: string | null): Promise<AdminDashboardData> {
   const data = await adminRequest<BackendAdminDashboardData>("/api/admin/dashboard", token);
   return normalizeAdminDashboardData(data);
+}
+
+export async function getAdminAnalytics(
+  token: string | null,
+  days = 30,
+): Promise<AdminAnalyticsData> {
+  const data = await adminRequest<BackendAdminAnalyticsData>(
+    `/api/admin/analytics?days=${days}`,
+    token,
+  );
+  return normalizeAdminAnalyticsData(data);
+}
+
+export async function getAdminSettings(token: string | null): Promise<AdminStudioSettings> {
+  const data = await adminRequest<BackendAdminStudioSettings>("/api/admin/settings", token);
+  return normalizeAdminStudioSettings(data);
+}
+
+export async function updateAdminSettings(
+  payload: AdminStudioSettingsInput,
+  token: string | null,
+): Promise<AdminStudioSettings> {
+  const data = await adminRequest<BackendAdminStudioSettings>("/api/admin/settings", token, {
+    method: "PUT",
+    body: JSON.stringify({
+      high_fidelity_rendering: payload.highFidelityRendering,
+      real_time_physics: payload.realTimePhysics,
+      precision_calibration: payload.precisionCalibration,
+      theme_accent: payload.themeAccent,
+      typography: payload.typography,
+    }),
+  });
+  return normalizeAdminStudioSettings(data);
 }
 
 export async function updateProduct(
@@ -380,13 +551,12 @@ export async function generateTryOn(payload: {
   });
 }
 
-
 export async function getTryOnResult(id: string): Promise<TryOnResult> {
   return request<TryOnResult>(`/api/tryon/history/${id}`);
 }
 
-export async function getTryOnHistory(): Promise<TryOnResult[]> {
-  return request<TryOnResult[]>("/api/tryon/history");
+export async function getTryOnHistory(token: string | null): Promise<TryOnResult[]> {
+  return adminRequest<TryOnResult[]>("/api/tryon/history", token);
 }
 
 export async function deleteTryOnHistory(historyId: string, token: string | null): Promise<void> {

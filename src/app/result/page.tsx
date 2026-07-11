@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Download, Share2, ShoppingBag, RotateCcw, Sparkles } from "lucide-react";
 
@@ -32,6 +32,8 @@ export default function Result() {
 function ResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const tryOnPath = pathname.startsWith("/admin") ? "/admin/try-on" : "/try-on";
   const [result, setResult] = useState<TryOnResult | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [similar, setSimilar] = useState<Product[]>([]);
@@ -41,7 +43,7 @@ function ResultContent() {
   useEffect(() => {
     const historyId = searchParams.get("id") ?? sessionStorage.getItem("tryon:lastResultId");
     if (!historyId) {
-      router.push("/try-on");
+      router.push(tryOnPath);
       return;
     }
     const resultId = historyId;
@@ -69,7 +71,7 @@ function ResultContent() {
     }
 
     loadResult();
-  }, [router, searchParams]);
+  }, [router, searchParams, tryOnPath]);
 
   if (error) {
     return (
@@ -77,7 +79,7 @@ function ResultContent() {
         <div className="max-w-md px-5 text-center">
           <p className="text-sm text-destructive">{error}</p>
           <Link
-            href="/try-on"
+            href={tryOnPath}
             className="mt-5 inline-flex items-center justify-center rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground"
           >
             Try again
@@ -191,11 +193,18 @@ function ResultContent() {
               </div>
             </div>
             <div className="mt-6 grid gap-3">
-              <button className="inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90">
-                <ShoppingBag className="h-4 w-4" /> Add to Cart
-              </button>
               <Link
-                href="/try-on"
+                href={
+                  pathname.startsWith("/admin")
+                    ? `/admin/products/${productData.id}`
+                    : `/collection/${productData.id}`
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+              >
+                <ShoppingBag className="h-4 w-4" /> View Product
+              </Link>
+              <Link
+                href={tryOnPath}
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:border-charcoal"
               >
                 <RotateCcw className="h-4 w-4" /> Try another outfit
@@ -250,7 +259,7 @@ function ResultContent() {
           <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
             <h2 className="font-display text-3xl text-charcoal sm:text-4xl">You may also like</h2>
             <Link
-              href="/collection"
+              href={pathname.startsWith("/admin") ? "/admin/collection" : "/collection"}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               View full collection
@@ -258,7 +267,7 @@ function ResultContent() {
           </div>
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
             {similar.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} tryOnHrefBase={tryOnPath} />
             ))}
           </div>
         </div>
