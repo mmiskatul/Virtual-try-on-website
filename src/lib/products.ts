@@ -8,6 +8,7 @@ import p7 from "@/assets/p7.jpg";
 import p8 from "@/assets/p8.jpg";
 
 export type Gender = "male" | "female" | "unisex";
+export type Coverage = "upper" | "lower" | "full" | "accessory";
 
 export interface Product {
   id: string;
@@ -18,8 +19,17 @@ export interface Product {
   image: string;
   description?: string;
   materials?: string;
+  cloth_type?: string;
+  coverage?: Coverage;
+  available_sizes?: string[];
+  fit_type?: string;
+  color?: string;
+  occasion?: string;
+  care_instructions?: string;
+  brand?: string;
   isActive?: boolean;
 }
+
 
 export const products: Product[] = [
   {

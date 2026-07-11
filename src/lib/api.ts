@@ -59,6 +59,14 @@ interface BackendProduct {
   price: number;
   description: string;
   materials?: string;
+  cloth_type?: string;
+  coverage?: string;
+  available_sizes?: string[];
+  fit_type?: string;
+  color?: string;
+  occasion?: string;
+  care_instructions?: string;
+  brand?: string;
   is_active: boolean;
 }
 
@@ -91,6 +99,14 @@ export interface ProductCreateInput {
   price: number;
   description: string;
   materials?: string;
+  cloth_type?: string;
+  coverage?: string;
+  available_sizes?: string[];
+  fit_type?: string;
+  color?: string;
+  occasion?: string;
+  care_instructions?: string;
+  brand?: string;
   is_active: boolean;
 }
 
@@ -102,6 +118,14 @@ export interface ProductUpdateInput {
   price?: number;
   description?: string;
   materials?: string;
+  cloth_type?: string;
+  coverage?: string;
+  available_sizes?: string[];
+  fit_type?: string;
+  color?: string;
+  occasion?: string;
+  care_instructions?: string;
+  brand?: string;
   is_active?: boolean;
 }
 
@@ -147,6 +171,14 @@ function normalizeProduct(product: BackendProduct): Product {
     image: product.image_url,
     description: product.description,
     materials: product.materials,
+    cloth_type: product.cloth_type,
+    coverage: product.coverage as Product["coverage"],
+    available_sizes: product.available_sizes ?? [],
+    fit_type: product.fit_type,
+    color: product.color,
+    occasion: product.occasion,
+    care_instructions: product.care_instructions,
+    brand: product.brand,
     isActive: product.is_active,
   };
 }
@@ -327,6 +359,7 @@ export async function getAdminSession(): Promise<{ username: string }> {
 export async function generateTryOn(payload: {
   user_image_url: string;
   product_id: string;
+  selected_size?: string;
   prompt_optional?: string;
 }): Promise<TryOnResult> {
   return request<TryOnResult>("/api/tryon/generate", {
@@ -334,6 +367,7 @@ export async function generateTryOn(payload: {
     body: JSON.stringify(payload),
   });
 }
+
 
 export async function getTryOnResult(id: string): Promise<TryOnResult> {
   return request<TryOnResult>(`/api/tryon/history/${id}`);

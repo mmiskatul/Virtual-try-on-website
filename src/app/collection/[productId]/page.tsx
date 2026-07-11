@@ -2,26 +2,58 @@
 
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
-import { Sparkles, ShoppingBag, ArrowLeft, Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  ShoppingBag,
+  ArrowLeft,
+  Loader2,
+  Tag,
+  Shirt,
+  Layers,
+  Palette,
+  Calendar,
+  Info,
+  WashingMachine,
+} from "lucide-react";
 import { getProduct, resolveAssetUrl } from "@/lib/api";
 
-export default function ProductDetailsPage({ params }: { params: Promise<{ productId: string }> }) {
+const COVERAGE_LABEL: Record<string, string> = {
+  upper: "Upper Body",
+  lower: "Lower Body",
+  full: "Full Body",
+  accessory: "Accessory",
+};
+
+export default function ProductDetailsPage({
+  params,
+}: {
+  params: Promise<{ productId: string }>;
+}) {
   const resolvedParams = use(params);
   const productId = resolvedParams.productId;
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"details" | "materials" | "care" | "returns">(
+    "details"
+  );
 
   useEffect(() => {
     setLoading(true);
     setNotFound(false);
     setProduct(null);
+    setSelectedSize("");
 
     getProduct(productId)
       .then((loadedProduct) => {
         if (loadedProduct) {
           setProduct(loadedProduct);
+          // Auto-select first available size
+          if (loadedProduct.available_sizes && loadedProduct.available_sizes.length > 0) {
+            setSelectedSize(loadedProduct.available_sizes[0]);
+          }
         } else {
           setNotFound(true);
         }
@@ -30,13 +62,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         console.error("Failed to load product details from API:", err);
         setNotFound(true);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   }, [productId]);
-
-  const [selectedSize, setSelectedSize] = useState("S");
-  const [activeTab, setActiveTab] = useState<"physics" | "materials" | "returns">("physics");
 
   // Loading state
   if (loading) {
@@ -62,7 +89,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         </h1>
         <p className="text-sm text-muted-foreground text-center max-w-sm">
           The product with ID{" "}
-          <span className="font-mono text-charcoal">{productId}</span> could not be found in the collection.
+          <span className="font-mono text-charcoal">{productId}</span> could not
+          be found in the collection.
         </p>
         <Link
           href="/collection"
@@ -74,6 +102,29 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
       </div>
     );
   }
+
+  const sizesToShow: string[] =
+    product.available_sizes && product.available_sizes.length > 0
+      ? product.available_sizes
+      : ["XS", "S", "M", "L", "XL", "XXL"];
+
+  const tryOnHref =
+    selectedSize
+      ? `/try-on?product=${product.id}&size=${encodeURIComponent(selectedSize)}`
+      : `/try-on?product=${product.id}`;
+
+  const badges = [
+    product.color && { icon: Palette, label: "Color", value: product.color },
+    product.cloth_type && { icon: Layers, label: "Fabric", value: product.cloth_type },
+    product.coverage && {
+      icon: Shirt,
+      label: "Coverage",
+      value: COVERAGE_LABEL[product.coverage] ?? product.coverage,
+    },
+    product.fit_type && { icon: Info, label: "Fit", value: product.fit_type },
+    product.occasion && { icon: Calendar, label: "Occasion", value: product.occasion },
+    product.brand && { icon: Tag, label: "Brand", value: product.brand },
+  ].filter(Boolean) as { icon: any; label: string; value: string }[];
 
   return (
     <div className="bg-white min-h-screen pb-24">
@@ -118,49 +169,88 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         </div>
 
         {/* Right Column: Garment info */}
-        <div className="lg:col-span-6 space-y-8 flex flex-col justify-center">
-          <div className="space-y-3">
+        <div className="lg:col-span-6 space-y-7 flex flex-col justify-start">
+          {/* Category + Gender */}
+          <div>
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#806B4D]">
-              {product.category}{product.gender ? ` · ${product.gender}` : ""}
+              {product.category}
+              {product.gender ? ` · ${product.gender.charAt(0).toUpperCase() + product.gender.slice(1)}` : ""}
             </span>
-            <h1 className="font-display text-4xl text-charcoal font-medium leading-tight">
+            <h1 className="mt-2 font-display text-4xl text-charcoal font-medium leading-tight">
               {product.name}
             </h1>
-            <p className="text-xl font-light text-charcoal/90">${product.price}</p>
+            <p className="mt-3 text-2xl font-light text-charcoal/90">
+              ${product.price.toFixed(2)}
+            </p>
           </div>
 
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {product.description}
-          </p>
+          {/* At-a-Glance badges */}
+          {badges.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {badges.map(({ icon: Icon, label, value }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5"
+                >
+                  <Icon className="h-3 w-3 text-[#806B4D]" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {label}:
+                  </span>
+                  <span className="text-[9px] font-semibold text-charcoal">{value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Description */}
+          {product.description && (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {product.description}
+            </p>
+          )}
 
           {/* Size picker */}
           <div className="space-y-3">
-            <p className="text-[9px] font-bold text-neutral-450 uppercase tracking-widest">Select Size</p>
-            <div className="flex items-center gap-3">
-              {["XS", "S", "M", "L", "XL"].map((size) => (
+            <div className="flex items-center justify-between">
+              <p className="text-[9px] font-bold text-charcoal uppercase tracking-widest">
+                Select Size
+              </p>
+              {selectedSize && (
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#806B4D]">
+                  Selected: {selectedSize}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {sizesToShow.map((size) => (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`h-9 w-9 rounded-full border text-[10px] font-bold uppercase transition flex items-center justify-center ${
+                  className={`min-w-[44px] h-10 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition px-3 ${
                     selectedSize === size
-                      ? "bg-charcoal border-transparent text-white"
-                      : "border-neutral-200 text-charcoal hover:border-charcoal"
+                      ? "bg-charcoal border-transparent text-white shadow-soft"
+                      : "border-neutral-200 text-charcoal hover:border-charcoal bg-white"
                   }`}
                 >
                   {size}
                 </button>
               ))}
             </div>
+            {product.available_sizes && product.available_sizes.length === 0 && (
+              <p className="text-[10px] text-muted-foreground">
+                Size information not available. Default sizes shown.
+              </p>
+            )}
           </div>
 
           {/* CTA Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-1">
             <Link
-              href={`/try-on?product=${product.id}`}
+              href={tryOnHref}
               className="flex-1 inline-flex items-center justify-center gap-2 bg-[#806B4D] hover:bg-[#6c5a40] text-white text-xs font-bold uppercase tracking-wider py-4 rounded-xl shadow-soft transition"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Try on in Studio</span>
+              <span>Try On in Studio{selectedSize ? ` (Size ${selectedSize})` : ""}</span>
             </Link>
             <button className="flex-1 inline-flex items-center justify-center gap-2 border border-charcoal/30 hover:bg-charcoal/5 text-charcoal text-xs font-bold uppercase tracking-wider py-4 rounded-xl transition">
               <ShoppingBag className="h-3.5 w-3.5" />
@@ -168,19 +258,20 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             </button>
           </div>
 
-          {/* Accordion Tabs */}
-          <div className="border-t border-neutral-200/60 pt-6 space-y-4">
+          {/* Detailed Info Tabs */}
+          <div className="border-t border-neutral-200/60 pt-5 space-y-4">
             {/* Tab buttons */}
-            <div className="flex gap-6 border-b border-neutral-100 pb-px text-[9px] font-bold uppercase tracking-widest text-neutral-400">
+            <div className="flex flex-wrap gap-4 border-b border-neutral-100 pb-px text-[9px] font-bold uppercase tracking-widest text-neutral-400">
               {[
-                { id: "physics", label: "Neural Drape Physics" },
-                { id: "materials", label: "Atelier Fabric Info" },
+                { id: "details", label: "Garment Details" },
+                { id: "materials", label: "Fabric & Materials" },
+                { id: "care", label: "Care" },
                 { id: "returns", label: "Shipping & Returns" },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`pb-3 relative transition ${
+                  className={`pb-3 relative transition whitespace-nowrap ${
                     activeTab === tab.id ? "text-charcoal" : "hover:text-charcoal"
                   }`}
                 >
@@ -193,26 +284,88 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             </div>
 
             {/* Tab content */}
-            <div className="text-[11px] leading-relaxed text-muted-foreground min-h-[60px]">
-              {activeTab === "physics" && (
-                <p>
-                  This garment features integrated structural mesh simulation files. In the Try-on Studio, our fabric mechanics calculator parses the drape density and elasticity constants of{" "}
-                  <span className="font-semibold text-charcoal">{product.name}</span> against body maps, ensuring a highly accurate fit preview.
-                </p>
+            <div className="text-[11px] leading-relaxed text-muted-foreground min-h-[80px] space-y-2">
+              {activeTab === "details" && (
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
+                  {[
+                    ["Category", product.category],
+                    ["Gender", product.gender && (product.gender.charAt(0).toUpperCase() + product.gender.slice(1))],
+                    ["Color", product.color],
+                    ["Cloth Type", product.cloth_type],
+                    ["Coverage", product.coverage && COVERAGE_LABEL[product.coverage]],
+                    ["Fit Type", product.fit_type],
+                    ["Occasion", product.occasion],
+                    ["Brand", product.brand],
+                    ["Price", product.price && `$${product.price.toFixed(2)}`],
+                    ["Available Sizes", product.available_sizes && product.available_sizes.length > 0 ? product.available_sizes.join(", ") : null],
+                  ]
+                    .filter(([, v]) => v)
+                    .map(([label, value]) => (
+                      <div key={label as string}>
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-neutral-400">
+                          {label}
+                        </p>
+                        <p className="mt-0.5 text-[11px] font-semibold text-charcoal">
+                          {value}
+                        </p>
+                      </div>
+                    ))}
+                </div>
               )}
+
               {activeTab === "materials" && (
-                <p>
-                  {product.materials
-                    ? (
-                      <>Crafted using atelier grade materials: <span className="font-semibold text-charcoal">{product.materials}</span>. We prioritize environmental durability and luxury texturing.</>
-                    )
-                    : "Material composition information is not available for this item. Contact our atelier team for details."}
-                </p>
+                <div className="space-y-2">
+                  {product.cloth_type && (
+                    <p>
+                      <span className="font-semibold text-charcoal">Cloth Type:</span>{" "}
+                      {product.cloth_type}
+                    </p>
+                  )}
+                  {product.materials ? (
+                    <p>
+                      <span className="font-semibold text-charcoal">Composition:</span>{" "}
+                      {product.materials}
+                    </p>
+                  ) : (
+                    <p>Material composition information is not available for this item.</p>
+                  )}
+                  <p className="text-[10px] text-neutral-400 mt-2 italic">
+                    Our garments are ethically sourced and responsibly manufactured.
+                  </p>
+                </div>
               )}
+
+              {activeTab === "care" && (
+                <div className="space-y-2">
+                  {product.care_instructions ? (
+                    <p>
+                      <span className="font-semibold text-charcoal">Care Instructions:</span>{" "}
+                      {product.care_instructions}
+                    </p>
+                  ) : (
+                    <p>
+                      Dry clean recommended. If machine washing, use a delicate cycle with cold
+                      water. Lay flat to dry. Do not bleach or tumble dry.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {activeTab === "returns" && (
-                <p>
-                  Complimentary standard shipping on all orders. Returns are accepted within 30 days of delivery in pristine condition. Fits generated via Try-on Studio are backed by our accuracy assurance.
-                </p>
+                <div className="space-y-2">
+                  <p>
+                    <span className="font-semibold text-charcoal">Free Shipping:</span>{" "}
+                    Complimentary standard shipping on all orders over $100.
+                  </p>
+                  <p>
+                    <span className="font-semibold text-charcoal">Returns:</span>{" "}
+                    Accepted within 30 days of delivery in original, unworn condition with tags attached.
+                  </p>
+                  <p>
+                    <span className="font-semibold text-charcoal">Try-On Guarantee:</span>{" "}
+                    Fits generated via our Try-On Studio are backed by our accuracy assurance — if the fit is wrong, we make it right.
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -221,4 +374,3 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     </div>
   );
 }
-

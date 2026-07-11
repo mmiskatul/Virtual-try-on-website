@@ -34,10 +34,12 @@ function TryOnContent() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const initialId = searchParams.get("product");
+  const initialSize = searchParams.get("size") ?? "";
   const [products, setProducts] = useState<Product[]>([]);
   const [photo, setPhoto] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string>(initialSize);
   const [genderFilter, setGenderFilter] = useState<"all" | Gender>("all");
   const [catFilter, setCatFilter] = useState<string>("all");
   const [dragOver, setDragOver] = useState(false);
@@ -68,7 +70,13 @@ function TryOnContent() {
     if (!initialId) return;
     getProduct(initialId)
       .then((loadedProduct) => {
-        if (loadedProduct) setSelected(loadedProduct);
+        if (loadedProduct) {
+          setSelected(loadedProduct);
+          // Auto-select size: prefer URL param, then first available size
+          if (!initialSize && loadedProduct.available_sizes && loadedProduct.available_sizes.length > 0) {
+            setSelectedSize(loadedProduct.available_sizes[0]);
+          }
+        }
       })
       .catch((err) => {
         console.error("Could not pre-select product:", err);
@@ -141,6 +149,7 @@ function TryOnContent() {
       const result = await generateTryOn({
         user_image_url: photo,
         product_id: selected.id,
+        selected_size: selectedSize || undefined,
         prompt_optional: prompt.trim() || undefined,
       });
       window.clearInterval(progress);
@@ -250,25 +259,69 @@ function TryOnContent() {
           </div>
 
           {selected && (
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Selected outfit
-              </p>
-              <div className="flex items-center gap-4">
-                <img
-                  src={resolveAssetUrl(selected.image)}
-                  alt={selected.name}
-                  className="h-20 w-16 rounded-xl object-cover"
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-foreground">{selected.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {selected.category} - ${selected.price}
-                  </p>
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-soft space-y-4">
+              {/* Selected outfit preview */}
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Selected outfit
+                </p>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={resolveAssetUrl(selected.image)}
+                    alt={selected.name}
+                    className="h-20 w-16 rounded-xl object-cover"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">{selected.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selected.category} · ${selected.price}
+                    </p>
+                    {selected.cloth_type && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{selected.cloth_type}</p>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              {/* Size picker */}
+              <div className="border-t border-border pt-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Your Size
+                  </p>
+                  {selectedSize && (
+                    <span className="text-[10px] font-bold text-gold uppercase tracking-wider">
+                      Size {selectedSize} selected
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(selected.available_sizes && selected.available_sizes.length > 0
+                    ? selected.available_sizes
+                    : ["XS", "S", "M", "L", "XL", "XXL"]
+                  ).map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`min-w-[40px] h-9 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition px-2.5 ${
+                        selectedSize === size
+                          ? "bg-charcoal border-transparent text-primary-foreground"
+                          : "border-border text-foreground hover:border-charcoal bg-background"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                {!selectedSize && (
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Please select your size before generating.
+                  </p>
+                )}
               </div>
             </div>
           )}
+
 
           <button
             onClick={generate}
