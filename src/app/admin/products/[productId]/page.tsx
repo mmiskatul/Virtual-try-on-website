@@ -7,16 +7,25 @@ import { AlertCircle, ArrowLeft, ImagePlus, Save, Sparkles, Trash2 } from "lucid
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
+  createCategory,
   deleteProduct,
+  getCategories,
   getAdminProduct,
   resolveAssetUrl,
   updateProduct,
   uploadProductImage,
 } from "@/lib/api";
 import type { Gender } from "@/lib/products";
+import { formatCategoryLabel, mergeCategoryOptions, type CategoryOption } from "@/lib/categories";
 
-const categories = ["shirt", "t-shirt", "pant", "kurti", "dress"] as const;
-type CategoryOption = (typeof categories)[number];
+const defaultCategories: CategoryOption[] = [
+  { value: "shirt", label: "Shirt" },
+  { value: "t-shirt", label: "T-Shirt" },
+  { value: "pant", label: "Pant" },
+  { value: "kurti", label: "Kurti" },
+  { value: "dress", label: "Dress" },
+  { value: "panjabi", label: "Panjabi" },
+];
 const genders: Gender[] = ["female", "male", "unisex"];
 
 export default function AdminProductDetailPage() {
@@ -25,9 +34,11 @@ export default function AdminProductDetailPage() {
   const { token } = useAdminAuth();
   const productId = params.productId;
 
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>(defaultCategories);
   const [name, setName] = useState("");
   const [gender, setGender] = useState<Gender>("female");
-  const [category, setCategory] = useState<CategoryOption>("dress");
+  const [category, setCategory] = useState("dress");
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [materials, setMaterials] = useState("");
@@ -45,6 +56,7 @@ export default function AdminProductDetailPage() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -62,7 +74,7 @@ export default function AdminProductDetailPage() {
         if (!active) return;
         setName(product.name);
         setGender(product.gender);
-        setCategory(product.category as CategoryOption);
+        setCategory(product.category);
         setPrice(String(product.price));
         setDescription(product.description ?? "");
         setMaterials(product.materials ?? "");
@@ -92,6 +104,65 @@ export default function AdminProductDetailPage() {
       active = false;
     };
   }, [productId, token]);
+
+  useEffect(() => {
+    let active = true;
+    getCategories()
+      .then((items) => {
+        if (active && items.length) {
+          setCategoryOptions((current) => mergeCategoryOptions([...current, ...items]));
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setCategoryOptions(defaultCategories);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (category && !categoryOptions.some((option) => option.value === category)) {
+      setCategoryOptions((current) =>
+        mergeCategoryOptions([
+          ...current,
+          { value: category, label: formatCategoryLabel(category) },
+        ]),
+      );
+    }
+  }, [category, categoryOptions]);
+
+  async function handleCreateCategory() {
+    if (!token) {
+      setError("Please log in as admin first.");
+      return;
+    }
+
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      setError("Enter a category name.");
+      return;
+    }
+
+    setError(null);
+    setMessage(null);
+    setSavingCategory(true);
+
+    try {
+      const created = await createCategory({ name: trimmed }, token);
+      setCategoryOptions((current) => mergeCategoryOptions([...current, created]));
+      setCategory(created.value);
+      setNewCategoryName("");
+      setMessage(`Saved category ${created.label}.`);
+    } catch (categoryError) {
+      setError(categoryError instanceof Error ? categoryError.message : "Could not save category.");
+    } finally {
+      setSavingCategory(false);
+    }
+  }
 
   async function handleImageUpload(file?: File | null) {
     if (!file || !token) return;
@@ -279,15 +350,36 @@ export default function AdminProductDetailPage() {
                 </span>
                 <select
                   value={category}
-                  onChange={(event) => setCategory(event.target.value as CategoryOption)}
+                  onChange={(event) => setCategory(event.target.value)}
                   className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
                 >
-                  {categories.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  {categoryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>
+                <div className="rounded-2xl border border-dashed border-border bg-cream/30 p-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <input
+                      value={newCategoryName}
+                      onChange={(event) => setNewCategoryName(event.target.value)}
+                      placeholder="Add new category, e.g. Panjabi"
+                      className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleCreateCategory}
+                      disabled={savingCategory}
+                      className="rounded-xl bg-charcoal px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {savingCategory ? "Saving..." : "Add category"}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Saved categories are stored in the backend and become available in the dropdown.
+                  </p>
+                </div>
               </label>
             </div>
 

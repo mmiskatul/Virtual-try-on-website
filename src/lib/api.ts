@@ -190,6 +190,11 @@ interface BackendAdminStudioSettings {
   }>;
 }
 
+interface BackendCategoryOption {
+  value: string;
+  label: string;
+}
+
 export interface ProductCreateInput {
   id?: string;
   name: string;
@@ -229,6 +234,11 @@ export interface ProductUpdateInput {
   care_instructions?: string;
   brand?: string;
   is_active?: boolean;
+}
+
+export interface CategoryOption {
+  value: string;
+  label: string;
 }
 
 export interface AdminLoginInput {
@@ -504,6 +514,28 @@ export async function getAdminAnalytics(
 export async function getAdminSettings(token: string | null): Promise<AdminStudioSettings> {
   const data = await adminRequest<BackendAdminStudioSettings>("/api/admin/settings", token);
   return normalizeAdminStudioSettings(data);
+}
+
+export async function getCategories(): Promise<CategoryOption[]> {
+  const data = await request<BackendCategoryOption[]>("/api/categories");
+  return data.map((item) => ({
+    value: item.value,
+    label: item.label,
+  }));
+}
+
+export async function createCategory(
+  payload: { name: string },
+  token: string | null,
+): Promise<CategoryOption> {
+  const data = await adminRequest<BackendCategoryOption>("/api/categories", token, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return {
+    value: data.value,
+    label: data.label,
+  };
 }
 
 export async function updateAdminSettings(
