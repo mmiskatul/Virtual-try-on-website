@@ -289,7 +289,7 @@ export default function Collection() {
 
 function ProductCardItem({ item }: { item: any }) {
   return (
-    <Link href={`/try-on?productId=${item.id}`} className="group relative block space-y-4 cursor-pointer">
+    <Link href={`/collection/${item.id}`} className="group relative block space-y-4 cursor-pointer">
       <div className="overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-100 border border-neutral-100 shadow-soft">
         <img
           src={item.image}
