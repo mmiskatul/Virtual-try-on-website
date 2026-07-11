@@ -131,7 +131,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <nav className="space-y-2">
             {[
               { label: "Overview", href: "/miskat/admin/dashboard", icon: LayoutDashboard },
-              { label: "Collections", href: "/miskat/admin/products", icon: Layers3 },
+              { label: "Collections", href: "/miskat/admin/collection", icon: Layers3 },
               { label: "Try-On Sessions", href: "/miskat/admin/history", icon: UserCheck },
               { label: "Analytics", href: "/miskat/admin/dashboard", icon: TrendingUp },
               { label: "Settings", href: "/miskat/admin/dashboard", icon: Settings },
