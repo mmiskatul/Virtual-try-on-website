@@ -4,7 +4,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react";
 
-import { generateTryOn, getProduct, getProducts, resolveAssetUrl, uploadUserPhoto } from "@/lib/api";
+import {
+  generateTryOn,
+  getProduct,
+  getProducts,
+  resolveAssetUrl,
+  uploadUserPhoto,
+} from "@/lib/api";
 import { type Gender, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
@@ -62,9 +68,11 @@ function TryOnContent() {
 
   // Load all backend products for the outfit picker
   useEffect(() => {
-    getProducts().then((loadedProducts) => {
-      setProducts(loadedProducts);
-    }).catch(() => setProducts([]));
+    getProducts()
+      .then((loadedProducts) => {
+        setProducts(loadedProducts);
+      })
+      .catch(() => setProducts([]));
   }, []);
 
   // If a product ID is passed via ?product=, fetch it directly from the backend
@@ -75,7 +83,11 @@ function TryOnContent() {
         if (loadedProduct) {
           setSelected(loadedProduct);
           // Auto-select size: prefer URL param, then first available size
-          if (!initialSize && loadedProduct.available_sizes && loadedProduct.available_sizes.length > 0) {
+          if (
+            !initialSize &&
+            loadedProduct.available_sizes &&
+            loadedProduct.available_sizes.length > 0
+          ) {
             setSelectedSize(loadedProduct.available_sizes[0]);
           }
         }
@@ -282,6 +294,41 @@ function TryOnContent() {
                 Uploading photo to backend...
               </p>
             )}
+
+            {/* My Normal Body Size Selector */}
+            <div className="mt-5 space-y-2.5 border-t border-border pt-5">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  My Normal Body Size
+                </p>
+                {userBodySize && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gold">
+                    Size {userBodySize} selected
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => setUserBodySize(size)}
+                    className={`h-9 min-w-[40px] rounded-lg border px-2.5 text-[10px] font-bold uppercase tracking-wide transition ${
+                      userBodySize === size
+                        ? "border-transparent bg-charcoal text-primary-foreground"
+                        : "border-border bg-background text-foreground hover:border-charcoal"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+              {!userBodySize && (
+                <p className="text-[10px] italic text-muted-foreground">
+                  Please select your normal body size.
+                </p>
+              )}
+            </div>
           </div>
 
           {selected && (
@@ -303,45 +350,12 @@ function TryOnContent() {
                       {selected.category} · ৳{selected.price}
                     </p>
                     {selected.cloth_type && (
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{selected.cloth_type}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {selected.cloth_type}
+                      </p>
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* My Normal Body Size Selector */}
-              <div className="border-t border-border pt-4 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    My Normal Body Size
-                  </p>
-                  {userBodySize && (
-                    <span className="text-[10px] font-bold text-gold uppercase tracking-wider">
-                      Size {userBodySize} selected
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => setUserBodySize(size)}
-                      className={`min-w-[40px] h-9 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition px-2.5 ${
-                        userBodySize === size
-                          ? "bg-charcoal border-transparent text-primary-foreground"
-                          : "border-border text-foreground hover:border-charcoal bg-background"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-                {!userBodySize && (
-                  <p className="text-[10px] text-muted-foreground italic">
-                    Please select your normal body size.
-                  </p>
-                )}
               </div>
 
               {/* Try-On Garment Size Selector */}
@@ -392,10 +406,8 @@ function TryOnContent() {
                   </p>
                 </div>
               )}
-
             </div>
           )}
-
 
           <button
             onClick={generate}

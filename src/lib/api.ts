@@ -38,6 +38,8 @@ export interface AdminDashboardData {
   activeProducts: number;
   inactiveProducts: number;
   totalTryOns: number;
+  tryOnsToday: number;
+  tryOnsLast7Days: Array<{ date: string; count: number }>;
   topProductName: string | null;
   topProductTryOnCount: number;
   recentProducts: Product[];
@@ -76,6 +78,8 @@ interface BackendAdminDashboardData {
   active_products: number;
   inactive_products: number;
   total_tryons: number;
+  tryons_today: number;
+  tryons_last_7_days: Array<{ date: string; count: number }>;
   top_product_name: string | null;
   top_product_try_on_count: number;
   recent_products: BackendProduct[];
@@ -193,6 +197,8 @@ function normalizeAdminDashboardData(data: BackendAdminDashboardData): AdminDash
     activeProducts: data.active_products,
     inactiveProducts: data.inactive_products,
     totalTryOns: data.total_tryons,
+    tryOnsToday: data.tryons_today,
+    tryOnsLast7Days: data.tryons_last_7_days,
     topProductName: data.top_product_name,
     topProductTryOnCount: data.top_product_try_on_count,
     recentProducts: data.recent_products.map(normalizeProduct),
