@@ -53,7 +53,7 @@ export default function AdminProductsPage() {
           </p>
         </div>
         <Link
-          href="/miskat/admin/add"
+          href="/admin/add"
           className="inline-flex items-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
         >
           <PlusCircle className="h-4 w-4" />
@@ -121,7 +121,7 @@ export default function AdminProductsPage() {
 
                 <div className="flex gap-3">
                   <Link
-                    href={`/miskat/admin/products/${product.id}`}
+                    href={`/admin/products/${product.id}`}
                     className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-charcoal px-4 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
                   >
                     <Edit3 className="h-4 w-4" />

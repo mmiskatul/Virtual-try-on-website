@@ -110,7 +110,7 @@ export default function AdminDashboardPage() {
         <div className="lg:col-span-8 space-y-6">
           <div className="flex justify-between items-end border-b border-neutral-200/50 pb-4">
             <h3 className="font-display text-2xl text-charcoal font-medium">Collection Overview</h3>
-            <Link href="/miskat/admin/products" className="text-[10px] font-bold uppercase tracking-wider text-[#806B4D] hover:underline flex items-center gap-1">
+            <Link href="/admin/collection" className="text-[10px] font-bold uppercase tracking-wider text-[#806B4D] hover:underline flex items-center gap-1">
               <span>View All</span>
               <span>→</span>
             </Link>

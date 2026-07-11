@@ -12,7 +12,9 @@ export default function AdminEntryPage() {
   useEffect(() => {
     if (loading) return;
 
-    router.replace(isAuthenticated ? "/miskat/admin/dashboard" : "/miskat/admin");
+    if (isAuthenticated) {
+      router.replace("/admin/dashboard");
+    }
   }, [isAuthenticated, loading, router]);
 
   return (

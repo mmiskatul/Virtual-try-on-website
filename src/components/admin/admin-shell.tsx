@@ -35,7 +35,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     try {
       await login(loginUsername, password);
       setPassword("");
-      router.replace("/miskat/admin/dashboard");
+      router.replace("/admin/dashboard");
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : "Could not log in.");
     } finally {
@@ -45,7 +45,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   async function handleLogout() {
     await logout();
-    router.replace("/miskat/admin");
+    router.replace("/admin");
   }
 
   if (loading) {
@@ -130,11 +130,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
           {/* Navigation */}
           <nav className="space-y-2">
             {[
-              { label: "Overview", href: "/miskat/admin/dashboard", icon: LayoutDashboard },
-              { label: "Collections", href: "/miskat/admin/collection", icon: Layers3 },
-              { label: "Try-On Sessions", href: "/miskat/admin/history", icon: UserCheck },
-              { label: "Analytics", href: "/miskat/admin/analytics", icon: TrendingUp },
-              { label: "Settings", href: "/miskat/admin/settings", icon: Settings },
+              { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+              { label: "Collections", href: "/admin/collection", icon: Layers3 },
+              { label: "Try-On Sessions", href: "/admin/history", icon: UserCheck },
+              { label: "Analytics", href: "/admin/analytics", icon: TrendingUp },
+              { label: "Settings", href: "/admin/settings", icon: Settings },
             ].map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href;
@@ -162,7 +162,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         {/* Sidebar Footer */}
         <div className="space-y-4">
           <Link
-            href="/miskat/admin/add"
+            href="/admin/add"
             className="flex items-center justify-center gap-2 w-full bg-charcoal text-white text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl hover:bg-[#806B4D] transition"
           >
             <span>+ New Collection</span>

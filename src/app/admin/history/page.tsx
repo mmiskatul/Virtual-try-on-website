@@ -189,7 +189,7 @@ export default function AdminHistoryPage() {
       <div className="bg-white rounded-3xl border border-neutral-200/50 shadow-soft overflow-hidden">
         <div className="p-6 border-b border-neutral-150/60 flex justify-between items-center">
           <h3 className="font-display text-2xl text-charcoal font-medium">Recent Sessions</h3>
-          <Link href="/miskat/admin/history" className="text-[10px] font-bold uppercase tracking-wider text-[#806B4D] hover:underline flex items-center gap-1">
+          <Link href="/admin/history" className="text-[10px] font-bold uppercase tracking-wider text-[#806B4D] hover:underline flex items-center gap-1">
             <span>View All</span>
             <span>→</span>
           </Link>

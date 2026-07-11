@@ -17,7 +17,7 @@ export function Navbar() {
     { href: "/about", label: "About" },
   ] as const;
 
-  if (pathname.startsWith("/miskat/admin")) {
+  if (pathname.startsWith("/admin")) {
     return null;
   }
 
@@ -83,7 +83,7 @@ export function Navbar() {
           </Link>
           
           <Link
-            href="/miskat/admin"
+            href="/admin"
             className="text-muted-foreground transition hover:text-foreground"
             aria-label="Profile"
           >
@@ -91,7 +91,7 @@ export function Navbar() {
           </Link>
 
           <Link
-            href="/miskat/admin"
+            href="/admin"
             className="hidden rounded-lg bg-charcoal px-5 py-2 text-xs font-semibold uppercase tracking-wider text-white shadow-soft transition hover:opacity-90 md:inline-flex"
           >
             Sign In
@@ -122,7 +122,7 @@ export function Navbar() {
               </Link>
             ))}
             <Link
-              href="/miskat/admin"
+              href="/admin"
               onClick={() => setOpen(false)}
               className="mt-2 rounded-lg bg-charcoal px-5 py-3 text-center text-sm font-medium text-white"
             >

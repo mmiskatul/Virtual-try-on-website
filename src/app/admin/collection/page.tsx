@@ -74,7 +74,7 @@ export default function AdminCollectionsPage() {
             Export Report
           </button>
           <Link
-            href="/miskat/admin/add"
+            href="/admin/add"
             className="inline-flex items-center gap-1.5 bg-charcoal text-white hover:bg-[#806B4D] text-xs font-bold uppercase tracking-wider px-5 py-3.5 rounded-xl transition"
           >
             <Plus className="h-3.5 w-3.5" />

@@ -150,7 +150,7 @@ export default function AdminProductDetailPage() {
 
     try {
       await deleteProduct(productId, token);
-      router.replace("/miskat/admin/products");
+      router.replace("/admin/products");
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Could not delete product.");
     } finally {
@@ -161,7 +161,7 @@ export default function AdminProductDetailPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <Link
-        href="/miskat/admin/products"
+        href="/admin/products"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
