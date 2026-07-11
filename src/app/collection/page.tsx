@@ -286,7 +286,7 @@ function ProductCardItem({ item }: { item: any }) {
               {item.name}
             </h3>
           </div>
-          <span className="text-sm font-semibold text-charcoal">${item.price}</span>
+          <span className="text-sm font-semibold text-charcoal">৳{item.price}</span>
         </div>
       </Link>
     </div>
