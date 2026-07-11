@@ -26,6 +26,7 @@ export default function AdminAddProductPage() {
   const [category, setCategory] = useState<CategoryOption>("dress");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [materials, setMaterials] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -98,6 +99,7 @@ export default function AdminAddProductPage() {
           image_url: imageUrl,
           price: numericPrice,
           description,
+          materials: materials || undefined,
           is_active: true,
         },
         token,
@@ -108,6 +110,7 @@ export default function AdminAddProductPage() {
       setCategory("dress");
       setPrice("");
       setDescription("");
+      setMaterials("");
       setImageUrl("");
       setPreviewUrl("");
     } catch (saveError) {
@@ -229,6 +232,19 @@ export default function AdminAddProductPage() {
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Describe the garment, fabric, and fit."
               rows={5}
+              className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+            />
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Materials
+            </span>
+            <input
+              type="text"
+              value={materials}
+              onChange={(event) => setMaterials(event.target.value)}
+              placeholder="e.g. 100% Organic Silk Crepe de Chine"
               className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
             />
           </label>

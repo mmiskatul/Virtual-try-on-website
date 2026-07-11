@@ -30,6 +30,7 @@ export default function AdminProductDetailPage() {
   const [category, setCategory] = useState<CategoryOption>("dress");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [materials, setMaterials] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
@@ -55,6 +56,7 @@ export default function AdminProductDetailPage() {
         setCategory(product.category as CategoryOption);
         setPrice(String(product.price));
         setDescription(product.description ?? "");
+        setMaterials(product.materials ?? "");
         setIsActive(product.isActive ?? true);
         setImageUrl(product.image);
         setPreviewUrl(resolveAssetUrl(product.image));
@@ -126,6 +128,7 @@ export default function AdminProductDetailPage() {
           image_url: imageUrl,
           price: numericPrice,
           description,
+          materials: materials || undefined,
           is_active: isActive,
         },
         token,
@@ -294,6 +297,19 @@ export default function AdminProductDetailPage() {
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 rows={5}
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Materials
+              </span>
+              <input
+                type="text"
+                value={materials}
+                onChange={(event) => setMaterials(event.target.value)}
+                placeholder="e.g. 100% Organic Silk Crepe de Chine"
                 className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
               />
             </label>

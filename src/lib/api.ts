@@ -58,6 +58,7 @@ interface BackendProduct {
   image_url: string;
   price: number;
   description: string;
+  materials?: string;
   is_active: boolean;
 }
 
@@ -89,6 +90,7 @@ export interface ProductCreateInput {
   image_url: string;
   price: number;
   description: string;
+  materials?: string;
   is_active: boolean;
 }
 
@@ -99,6 +101,7 @@ export interface ProductUpdateInput {
   image_url?: string;
   price?: number;
   description?: string;
+  materials?: string;
   is_active?: boolean;
 }
 
@@ -143,6 +146,7 @@ function normalizeProduct(product: BackendProduct): Product {
     price: product.price,
     image: product.image_url,
     description: product.description,
+    materials: product.materials,
     isActive: product.is_active,
   };
 }
