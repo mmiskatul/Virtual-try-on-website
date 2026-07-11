@@ -81,7 +81,7 @@ function TryOnContent() {
         }
       })
       .catch((err) => {
-        console.error("Could not pre-select product:", err);
+        console.error("Could not pre-select product.");
       });
   }, [initialId]);
 

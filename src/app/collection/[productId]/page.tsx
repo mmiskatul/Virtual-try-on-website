@@ -59,7 +59,7 @@ export default function ProductDetailsPage({
         }
       })
       .catch((err) => {
-        console.error("Failed to load product details from API:", err);
+        console.error("Failed to load product details.");
         setNotFound(true);
       })
       .finally(() => setLoading(false));

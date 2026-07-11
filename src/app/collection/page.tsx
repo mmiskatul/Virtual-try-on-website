@@ -16,7 +16,7 @@ export default function Collection() {
         setProductsList(activeProducts);
       }
     }).catch((err) => {
-      console.error("Failed to load products from api:", err);
+      console.error("Failed to load products.");
     });
   }, []);
 

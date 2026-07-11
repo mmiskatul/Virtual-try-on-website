@@ -54,7 +54,7 @@ async function getProducts() {
       isActive: product.is_active,
     }));
   } catch (e) {
-    console.error("Failed to fetch products on server:", e);
+    console.error("Failed to fetch products.");
     return [];
   }
 }
