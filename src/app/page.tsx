@@ -265,7 +265,7 @@ export default async function Home() {
               Limited Release
             </span>
             <h2 className="font-display text-4xl text-charcoal sm:text-5xl">
-              Winter Collection '24
+              Collection
             </h2>
           </div>
           <div className="flex gap-2">
