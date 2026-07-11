@@ -2,92 +2,78 @@
 
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
-import { Sparkles, ShoppingBag, ArrowLeft } from "lucide-react";
+import { Sparkles, ShoppingBag, ArrowLeft, Loader2 } from "lucide-react";
 import { getProduct, resolveAssetUrl } from "@/lib/api";
-
-import p1 from "@/assets/p1.jpg";
-import p3 from "@/assets/p3.jpg";
-import p5 from "@/assets/p5.jpg";
-import p6 from "@/assets/p6.jpg";
-import p7 from "@/assets/p7.jpg";
-import sculptedTote from "@/assets/sculpted_tote.png";
-
-const products = [
-  {
-    id: "sculpted-wool-overcoat",
-    name: "Sculpted Wool Overcoat",
-    category: "CHARCOAL / TAILORED",
-    price: 1250,
-    image: p7.src,
-    description: "Meticulously crafted from high-grade wool blend, this sculpted overcoat features structured shoulders, deep notch lapels, and a classic tailored silhouette. Built to withstand winter winds with absolute poise.",
-    materials: "80% Virgin Wool, 20% Cashmere. Lining: 100% Silk.",
-  },
-  {
-    id: "silk-bias-midi-dress",
-    name: "Silk Bias Midi Dress",
-    category: "CHAMPAGNE / EVENING",
-    price: 890,
-    image: p5.src,
-    description: "Elegant bias-cut midi dress fluidly drapes along body contours. Features a cowl neckline, delicate spaghetti straps, and a low open back. Constructed from luxurious silk crepe de chine for a lustrous drape.",
-    materials: "100% Organic Silk Crepe de Chine. Delicate dry clean only.",
-  },
-  {
-    id: "pleated-crepe-trousers",
-    name: "Pleated Crepe Trousers",
-    category: "ESPRESSO / TAILORED",
-    price: 450,
-    image: p3.src,
-    description: "Flowing crepe trousers designed with double front pleats, high-rise waistline, and relaxed wide legs. An elegant staple matching structured blazers and delicate silk shirts.",
-    materials: "70% Triacetate, 30% Polyester. Dry clean only.",
-  },
-  {
-    id: "cloud-cashmere-knit",
-    name: "Cloud Cashmere Knit",
-    category: "OATMEAL / RELAXED",
-    price: 820,
-    image: p1.src,
-    description: "Incredibly soft mock-neck knit sweater woven from premium long-fiber cashmere. Relaxed drop shoulders, ribbed cuffs, and an airy texture providing cloud-like warmth.",
-    materials: "100% Grade-A Mongolian Cashmere. Hand wash cold, flat dry.",
-  },
-  {
-    id: "the-sculpted-tote",
-    name: "The Sculpted Tote",
-    category: "MAHOGANY / CALFSKIN",
-    price: 1500,
-    image: sculptedTote.src,
-    description: "Geometric sculpted tote bag handcrafted in Florence. Architectural lines, structured top handles, and spacious interior lined in soft suede. Completed with gold-plated brass hardware.",
-    materials: "100% Genuine Full-Grain Calfskin Leather. Suede lining.",
-  },
-  {
-    id: "the-signature-blazer",
-    name: "The Signature Blazer",
-    category: "ONYX / PRIMA",
-    price: 1100,
-    image: p6.src,
-    description: "Single-breasted signature blazer featuring a tailored waist, structured shoulders, and classic notched collar. An empowering outerwear layer transitioning effortlessly from boardroom to bistro.",
-    materials: "90% Italian Merino Wool, 10% Elastane. Dry clean.",
-  },
-];
 
 export default function ProductDetailsPage({ params }: { params: Promise<{ productId: string }> }) {
   const resolvedParams = use(params);
   const productId = resolvedParams.productId;
-  
-  const fallbackProduct = products.find((p) => p.id === productId) || products[0];
-  const [product, setProduct] = useState<any>(fallbackProduct);
+
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    getProduct(productId).then((loadedProduct) => {
-      if (loadedProduct) {
-        setProduct(loadedProduct);
-      }
-    }).catch((err) => {
-      console.error("Failed to load product details from API:", err);
-    });
+    setLoading(true);
+    setNotFound(false);
+    setProduct(null);
+
+    getProduct(productId)
+      .then((loadedProduct) => {
+        if (loadedProduct) {
+          setProduct(loadedProduct);
+        } else {
+          setNotFound(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load product details from API:", err);
+        setNotFound(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [productId]);
 
   const [selectedSize, setSelectedSize] = useState("S");
   const [activeTab, setActiveTab] = useState<"physics" | "materials" | "returns">("physics");
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="bg-white min-h-screen flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-8 w-8 text-[#806B4D] animate-spin" />
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          Loading product details…
+        </p>
+      </div>
+    );
+  }
+
+  // Not found state
+  if (notFound || !product) {
+    return (
+      <div className="bg-white min-h-screen flex flex-col items-center justify-center gap-6 px-5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#806B4D]">
+          404 — Not Found
+        </p>
+        <h1 className="font-display text-3xl text-charcoal text-center">
+          This product doesn&apos;t exist
+        </h1>
+        <p className="text-sm text-muted-foreground text-center max-w-sm">
+          The product with ID{" "}
+          <span className="font-mono text-charcoal">{productId}</span> could not be found in the collection.
+        </p>
+        <Link
+          href="/collection"
+          className="inline-flex items-center gap-2 rounded-lg bg-charcoal px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-neutral-800"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Collection
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen pb-24">
@@ -107,11 +93,27 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         {/* Left Column: Product Image */}
         <div className="lg:col-span-6">
           <div className="overflow-hidden rounded-3xl border border-neutral-100 bg-[#f9f8f6] aspect-[4/5] shadow-soft">
-            <img
-              src={resolveAssetUrl(product.image)}
-              alt={product.name}
-              className="h-full w-full object-cover object-center"
-            />
+            {product.image ? (
+              <img
+                src={resolveAssetUrl(product.image)}
+                alt={product.name}
+                className="h-full w-full object-cover object-center"
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center bg-neutral-100">
+                <Sparkles className="h-8 w-8 text-[#806B4D]/40" />
+              </div>
+            )}
+          </div>
+
+          {/* Product ID badge */}
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              Product ID
+            </span>
+            <span className="rounded-md bg-neutral-100 px-2.5 py-1 font-mono text-[10px] text-charcoal">
+              {product.id}
+            </span>
           </div>
         </div>
 
@@ -119,7 +121,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         <div className="lg:col-span-6 space-y-8 flex flex-col justify-center">
           <div className="space-y-3">
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#806B4D]">
-              {product.category}
+              {product.category}{product.gender ? ` · ${product.gender}` : ""}
             </span>
             <h1 className="font-display text-4xl text-charcoal font-medium leading-tight">
               {product.name}
@@ -194,12 +196,17 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             <div className="text-[11px] leading-relaxed text-muted-foreground min-h-[60px]">
               {activeTab === "physics" && (
                 <p>
-                  This garment features integrated structural mesh simulation files. In the Try-on Studio, our fabric mechanics calculator parses the drape density and elasticity constants of {(product.name || "garment").toLowerCase()} against body maps, ensuring a highly accurate fit preview.
+                  This garment features integrated structural mesh simulation files. In the Try-on Studio, our fabric mechanics calculator parses the drape density and elasticity constants of{" "}
+                  <span className="font-semibold text-charcoal">{product.name}</span> against body maps, ensuring a highly accurate fit preview.
                 </p>
               )}
               {activeTab === "materials" && (
                 <p>
-                  Crafted using atelier grade materials: {product.materials || "Premium organic fibers. Dry clean only."} We prioritize environmental durability and luxury texturing. Refer to care labels for washing parameters.
+                  {product.materials
+                    ? (
+                      <>Crafted using atelier grade materials: <span className="font-semibold text-charcoal">{product.materials}</span>. We prioritize environmental durability and luxury texturing.</>
+                    )
+                    : "Material composition information is not available for this item. Contact our atelier team for details."}
                 </p>
               )}
               {activeTab === "returns" && (
@@ -214,3 +221,4 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     </div>
   );
 }
+
