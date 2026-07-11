@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Sparkles } from "lucide-react";
+import { getProducts, resolveAssetUrl } from "@/lib/api";
 
 import p1 from "@/assets/p1.jpg";
 import p3 from "@/assets/p3.jpg";
@@ -15,20 +16,7 @@ import sculptedTote from "@/assets/sculpted_tote.png";
 
 export default function Collection() {
   const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(() => {
-    const handleSearchChange = () => {
-      const params = new URLSearchParams(window.location.search);
-      setSearchQuery(params.get("search") || "");
-    };
-
-    window.addEventListener("search-change", handleSearchChange);
-    handleSearchChange(); // initial check
-
-    return () => {
-      window.removeEventListener("search-change", handleSearchChange);
-    };
-  }, []);
+  const [productsList, setProductsList] = useState<any[]>([]);
 
   const displayProducts = [
     {
@@ -75,8 +63,37 @@ export default function Collection() {
     },
   ];
 
+  useEffect(() => {
+    setProductsList(displayProducts);
+    
+    getProducts().then((loadedProducts) => {
+      if (loadedProducts && loadedProducts.length > 0) {
+        const activeProducts = loadedProducts.filter((p) => p.isActive !== false);
+        if (activeProducts.length > 0) {
+          setProductsList(activeProducts);
+        }
+      }
+    }).catch((err) => {
+      console.error("Failed to load products from api:", err);
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleSearchChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      setSearchQuery(params.get("search") || "");
+    };
+
+    window.addEventListener("search-change", handleSearchChange);
+    handleSearchChange(); // initial check
+
+    return () => {
+      window.removeEventListener("search-change", handleSearchChange);
+    };
+  }, []);
+
   // Filter products based on search query
-  const filteredProducts = displayProducts.filter((p) => {
+  const filteredProducts = productsList.filter((p) => {
     if (!searchQuery) return true;
     return (
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -143,16 +160,20 @@ export default function Collection() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {/* Column 1 */}
           <div className="space-y-8">
-            {filteredProducts[0] && <ProductCardItem item={filteredProducts[0]} />}
-            {filteredProducts[2] && <ProductCardItem item={filteredProducts[2]} />}
-            {filteredProducts[4] && <ProductCardItem item={filteredProducts[4]} />}
+            {filteredProducts
+              .filter((_, idx) => idx % 2 === 0)
+              .map((p) => (
+                <ProductCardItem key={p.id} item={p} />
+              ))}
           </div>
 
           {/* Column 2 */}
           <div className="space-y-8">
-            {filteredProducts[1] && <ProductCardItem item={filteredProducts[1]} />}
-            {filteredProducts[3] && <ProductCardItem item={filteredProducts[3]} />}
-            {filteredProducts[5] && <ProductCardItem item={filteredProducts[5]} />}
+            {filteredProducts
+              .filter((_, idx) => idx % 2 === 1)
+              .map((p) => (
+                <ProductCardItem key={p.id} item={p} />
+              ))}
           </div>
 
           {/* Column 3 - Large Card Spanning 2 rows */}
@@ -294,7 +315,7 @@ function ProductCardItem({ item }: { item: any }) {
       <Link href={`/collection/${item.id}`} className="block cursor-pointer">
         <div className="overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-100 border border-neutral-100 shadow-soft relative">
           <img
-            src={item.image}
+            src={resolveAssetUrl(item.image)}
             alt={item.name}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
