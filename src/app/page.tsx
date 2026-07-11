@@ -286,7 +286,7 @@ export default function Home() {
               Get Started Now
             </Link>
             <Link
-              href="/#how-it-works"
+              href="/how-it-works"
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-transparent px-8 py-4 text-xs font-semibold uppercase tracking-wider text-white transition hover:border-white hover:bg-white/5"
             >
               Find Details
