@@ -95,7 +95,11 @@ export default function AdminDashboardPage() {
               Total Try-Ons
             </p>
             <div className="font-display text-4xl font-light text-charcoal">
-              {loading ? <Skeleton className="h-10 w-24 bg-[#806B4D]/10" /> : (dashboard?.totalTryOns ?? 0).toLocaleString()}
+              {loading ? (
+                <Skeleton className="h-10 w-24 bg-[#806B4D]/10" />
+              ) : (
+                (dashboard?.totalTryOns ?? 0).toLocaleString()
+              )}
             </div>
           </div>
           <div className="mt-4 h-1 w-full rounded-full bg-[#806B4D]" />
@@ -115,7 +119,11 @@ export default function AdminDashboardPage() {
               Try-Ons Today
             </p>
             <div className="font-display text-4xl font-light text-white">
-              {loading ? <Skeleton className="h-10 w-24 bg-neutral-700" /> : (dashboard?.tryOnsToday ?? 0).toLocaleString()}
+              {loading ? (
+                <Skeleton className="h-10 w-24 bg-neutral-700" />
+              ) : (
+                (dashboard?.tryOnsToday ?? 0).toLocaleString()
+              )}
             </div>
           </div>
           {loading ? (
@@ -150,7 +158,11 @@ export default function AdminDashboardPage() {
               <Layers3 className="h-5 w-5" />
             </span>
             <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-400">
-              {loading ? <Skeleton className="h-3 w-16" /> : `${dashboard?.inactiveProducts ?? 0} inactive`}
+              {loading ? (
+                <Skeleton className="h-3 w-16" />
+              ) : (
+                `${dashboard?.inactiveProducts ?? 0} inactive`
+              )}
             </span>
           </div>
           <div className="mt-4 space-y-1">
@@ -158,11 +170,19 @@ export default function AdminDashboardPage() {
               Active Products
             </p>
             <div className="font-display text-4xl font-light text-charcoal">
-              {loading ? <Skeleton className="h-10 w-24 bg-[#806B4D]/10" /> : (dashboard?.activeProducts ?? 0).toLocaleString()}
+              {loading ? (
+                <Skeleton className="h-10 w-24 bg-[#806B4D]/10" />
+              ) : (
+                (dashboard?.activeProducts ?? 0).toLocaleString()
+              )}
             </div>
           </div>
           <div className="mt-4 text-[9px] font-bold uppercase tracking-wider text-[#806B4D]">
-            {loading ? <Skeleton className="h-3 w-28" /> : `${dashboard?.totalProducts ?? 0} products total`}
+            {loading ? (
+              <Skeleton className="h-3 w-28" />
+            ) : (
+              `${dashboard?.totalProducts ?? 0} products total`
+            )}
           </div>
         </div>
       </div>
@@ -191,7 +211,10 @@ export default function AdminDashboardPage() {
           <div className="grid gap-6 sm:grid-cols-2">
             {loading ? (
               Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="space-y-4 rounded-3xl border border-neutral-200/40 bg-white p-4 shadow-soft">
+                <div
+                  key={i}
+                  className="space-y-4 rounded-3xl border border-neutral-200/40 bg-white p-4 shadow-soft"
+                >
                   <Skeleton className="aspect-[4/5] w-full rounded-2xl" />
                   <div className="space-y-2">
                     <Skeleton className="h-3.5 w-1/3" />

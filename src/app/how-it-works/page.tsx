@@ -2,7 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, Cpu, Award, ChevronDown, User, Scissors, Sparkles, Zap, Play, ArrowRight } from "lucide-react";
+import {
+  ShieldCheck,
+  Cpu,
+  Award,
+  ChevronDown,
+  User,
+  Scissors,
+  Sparkles,
+  Zap,
+  Play,
+  ArrowRight,
+} from "lucide-react";
 
 import howHero from "@/assets/how_hero.png";
 import textileSimulation from "@/assets/textile_simulation.png";
@@ -41,7 +52,8 @@ export default function HowItWorks() {
           Virtual drape. <br className="sm:hidden" /> Real confidence.
         </h1>
         <p className="text-sm leading-relaxed text-muted-foreground max-w-2xl mx-auto">
-          Discover the neural engine that powers our virtual fitting room. We combine computer vision with textile physics to bring the boutique experience to your screen.
+          Discover the neural engine that powers our virtual fitting room. We combine computer
+          vision with textile physics to bring the boutique experience to your screen.
         </p>
       </section>
 
@@ -54,15 +66,13 @@ export default function HowItWorks() {
             className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.02]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/35" />
-          
+
           {/* Top Metadata */}
           <div className="absolute top-6 left-6 right-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 uppercase tracking-widest text-[9px] text-white/95 font-semibold">
             <span className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-md">
               AI FIT STUDIO | GENERATIVE FASHION
             </span>
-            <span className="text-white/80">
-              HOW IT WORKS | Real-time Digital Fitting
-            </span>
+            <span className="text-white/80">HOW IT WORKS | Real-time Digital Fitting</span>
           </div>
 
           {/* Central Play Button */}
@@ -85,9 +95,12 @@ export default function HowItWorks() {
               <div className="h-9 w-9 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center text-[#806B4D]">
                 <User className="h-4.5 w-4.5" />
               </div>
-              <h3 className="font-display text-2xl font-medium text-charcoal">Neural Body Mapping</h3>
+              <h3 className="font-display text-2xl font-medium text-charcoal">
+                Neural Body Mapping
+              </h3>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Our AI analyzes your photo to identify 130+ unique anatomical anchor points, creating a precise 3D digital model of your silhouette.
+                Our AI analyzes your photo to identify 130+ unique anatomical anchor points,
+                creating a precise 3D digital model of your silhouette.
               </p>
             </div>
             <button className="text-[9px] font-bold tracking-widest uppercase text-[#806B4D] hover:underline text-left mt-6">
@@ -103,9 +116,12 @@ export default function HowItWorks() {
                 <div className="h-9 w-9 rounded-lg bg-neutral-800/40 border border-neutral-700/30 flex items-center justify-center text-[#806B4D]">
                   <Scissors className="h-4.5 w-4.5" />
                 </div>
-                <h3 className="font-display text-2xl font-medium text-white">Textile Physics Simulation</h3>
+                <h3 className="font-display text-2xl font-medium text-white">
+                  Textile Physics Simulation
+                </h3>
                 <p className="text-xs leading-relaxed text-neutral-400">
-                  Every garment is digitized using our proprietary cloth-engine technology, simulating weight, elasticity, and drape in real-time.
+                  Every garment is digitized using our proprietary cloth-engine technology,
+                  simulating weight, elasticity, and drape in real-time.
                 </p>
               </div>
             </div>
@@ -130,9 +146,12 @@ export default function HowItWorks() {
                 <div className="h-9 w-9 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center text-[#806B4D]">
                   <Sparkles className="h-4.5 w-4.5" />
                 </div>
-                <h3 className="font-display text-2xl font-medium text-charcoal">Photorealistic Rendering</h3>
+                <h3 className="font-display text-2xl font-medium text-charcoal">
+                  Photorealistic Rendering
+                </h3>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  Using Ray Tracing technology, we match the lighting of your environment to the digital garment, ensuring a seamless visual fit.
+                  Using Ray Tracing technology, we match the lighting of your environment to the
+                  digital garment, ensuring a seamless visual fit.
                 </p>
               </div>
             </div>
@@ -154,9 +173,12 @@ export default function HowItWorks() {
               <div className="h-9 w-9 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center text-[#806B4D]">
                 <Zap className="h-4.5 w-4.5" />
               </div>
-              <h3 className="font-display text-2xl font-medium text-charcoal">Instant Refinement</h3>
+              <h3 className="font-display text-2xl font-medium text-charcoal">
+                Instant Refinement
+              </h3>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Adjust sizes or colors instantly. Our engine recalculates the fit in under 5 seconds, providing immediate visual feedback for your style decisions.
+                Adjust sizes or colors instantly. Our engine recalculates the fit in under 5
+                seconds, providing immediate visual feedback for your style decisions.
               </p>
             </div>
           </div>
@@ -167,7 +189,9 @@ export default function HowItWorks() {
       <section className="bg-white border-y border-neutral-200/40 py-24 px-5">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center space-y-3">
-            <h2 className="font-display text-4xl text-charcoal font-medium">The AI Fit Studio Promise</h2>
+            <h2 className="font-display text-4xl text-charcoal font-medium">
+              The AI Fit Studio Promise
+            </h2>
             <p className="text-xs tracking-wider uppercase text-[#806B4D] font-semibold">
               We prioritize what matters most to the modern shopper.
             </p>
@@ -181,7 +205,8 @@ export default function HowItWorks() {
               </div>
               <h4 className="font-display text-xl text-charcoal font-semibold">Privacy First</h4>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Your body data is encrypted and processed locally. We never store raw images, only mathematical vectors of your silhouette.
+                Your body data is encrypted and processed locally. We never store raw images, only
+                mathematical vectors of your silhouette.
               </p>
             </div>
 
@@ -192,7 +217,8 @@ export default function HowItWorks() {
               </div>
               <h4 className="font-display text-xl text-charcoal font-semibold">Real-Time Engine</h4>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Optimized for mobile browsers. Experience the future of shopping without heavy downloads or laggy interfaces.
+                Optimized for mobile browsers. Experience the future of shopping without heavy
+                downloads or laggy interfaces.
               </p>
             </div>
 
@@ -203,7 +229,8 @@ export default function HowItWorks() {
               </div>
               <h4 className="font-display text-xl text-charcoal font-semibold">Certified Fit</h4>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Our algorithms are trained on over 500,000+ real-world garment scans to ensure the virtual fit matches the physical reality.
+                Our algorithms are trained on over 500,000+ real-world garment scans to ensure the
+                virtual fit matches the physical reality.
               </p>
             </div>
           </div>
@@ -213,7 +240,9 @@ export default function HowItWorks() {
       {/* 5. FAQ Section */}
       <section className="bg-neutral-50 px-5 py-24">
         <div className="max-w-3xl mx-auto space-y-12">
-          <h2 className="font-display text-4xl text-charcoal font-medium text-center">Frequently Asked Questions</h2>
+          <h2 className="font-display text-4xl text-charcoal font-medium text-center">
+            Frequently Asked Questions
+          </h2>
           <div className="space-y-4">
             {faqs.map((faq, idx) => (
               <div
@@ -224,7 +253,9 @@ export default function HowItWorks() {
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                   className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
                 >
-                  <span className="text-xs font-semibold text-charcoal uppercase tracking-wider">{faq.q}</span>
+                  <span className="text-xs font-semibold text-charcoal uppercase tracking-wider">
+                    {faq.q}
+                  </span>
                   <ChevronDown
                     className={`h-4 w-4 text-neutral-500 transition duration-300 ${
                       openFaq === idx ? "rotate-180" : ""

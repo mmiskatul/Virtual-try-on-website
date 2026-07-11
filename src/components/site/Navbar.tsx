@@ -55,7 +55,9 @@ export function Navbar() {
               key={l.href}
               href={l.href}
               className={`text-xs font-semibold uppercase tracking-wider transition ${
-                pathname === l.href ? "text-[#806B4D]" : "text-muted-foreground hover:text-foreground"
+                pathname === l.href
+                  ? "text-[#806B4D]"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {l.label}
@@ -68,13 +70,20 @@ export function Navbar() {
           {/* Search form trigger */}
           {pathname === "/collection" && (
             <div className="relative">
-              <form onSubmit={handleSearch} className="relative flex items-center bg-[#FAF9F6] border border-neutral-200/60 rounded-full px-3 py-1.5 focus-within:border-charcoal/20">
+              <form
+                onSubmit={handleSearch}
+                className="relative flex items-center bg-[#FAF9F6] border border-neutral-200/60 rounded-full px-3 py-1.5 focus-within:border-charcoal/20"
+              >
                 <Search className="h-3.5 w-3.5 text-neutral-400 mr-1.5 shrink-0" />
                 <input
                   name="q"
                   type="text"
                   placeholder="Search catalog..."
-                  defaultValue={new URLSearchParams(typeof window !== "undefined" ? window.location.search : "").get("search") || ""}
+                  defaultValue={
+                    new URLSearchParams(
+                      typeof window !== "undefined" ? window.location.search : "",
+                    ).get("search") || ""
+                  }
                   className="bg-transparent text-[10px] font-semibold uppercase tracking-wider focus:outline-none w-28 text-charcoal placeholder-neutral-400"
                   onChange={(e) => {
                     const value = e.target.value;

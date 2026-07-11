@@ -54,7 +54,10 @@ function AdminAnalyticsPageContent() {
   const [error, setError] = useState<string | null>(null);
 
   const [focusedProduct, setFocusedProduct] = useState<Product | null>(null);
-  const [focusedProductStats, setFocusedProductStats] = useState<{ tryOnCount: number; lastTryOnAt: string | null } | null>(null);
+  const [focusedProductStats, setFocusedProductStats] = useState<{
+    tryOnCount: number;
+    lastTryOnAt: string | null;
+  } | null>(null);
   const [loadingProduct, setLoadingProduct] = useState(false);
 
   useEffect(() => {
@@ -241,7 +244,11 @@ function AdminAnalyticsPageContent() {
               {label}
             </span>
             <p className="mt-1 font-display text-3xl font-light text-charcoal">
-              {loading ? <Skeleton className="h-9 w-24 bg-primary/5" /> : (value ?? 0).toLocaleString()}
+              {loading ? (
+                <Skeleton className="h-9 w-24 bg-primary/5" />
+              ) : (
+                (value ?? 0).toLocaleString()
+              )}
             </p>
             <Icon className="absolute -bottom-3 -right-3 h-16 w-16 text-neutral-100" />
           </div>
@@ -267,28 +274,26 @@ function AdminAnalyticsPageContent() {
           )}
         </div>
         <div className="mt-8 flex h-56 items-end gap-1 border-b border-neutral-100">
-          {loading ? (
-            Array.from({ length: 30 }).map((_, i) => (
-              <div key={i} className="flex-1 h-full flex items-end">
-                <Skeleton 
-                  className="w-full bg-[#806B4D]/10 rounded-t"
-                  style={{ height: `${20 + (i % 6) * 12}%` }} 
-                />
-              </div>
-            ))
-          ) : (
-            (analytics?.dailyTryOns ?? []).map((item) => (
-              <div key={item.date} className="group relative flex h-full flex-1 items-end">
-                <div
-                  className="min-h-1 w-full rounded-t bg-[#806B4D] transition hover:bg-charcoal"
-                  style={{ height: `${Math.max(2, (item.count / maxDaily) * 100)}%` }}
-                />
-                <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-charcoal px-2 py-1 text-[8px] text-white group-hover:block">
-                  {item.date}: {item.count}
-                </span>
-              </div>
-            ))
-          )}
+          {loading
+            ? Array.from({ length: 30 }).map((_, i) => (
+                <div key={i} className="flex-1 h-full flex items-end">
+                  <Skeleton
+                    className="w-full bg-[#806B4D]/10 rounded-t"
+                    style={{ height: `${20 + (i % 6) * 12}%` }}
+                  />
+                </div>
+              ))
+            : (analytics?.dailyTryOns ?? []).map((item) => (
+                <div key={item.date} className="group relative flex h-full flex-1 items-end">
+                  <div
+                    className="min-h-1 w-full rounded-t bg-[#806B4D] transition hover:bg-charcoal"
+                    style={{ height: `${Math.max(2, (item.count / maxDaily) * 100)}%` }}
+                  />
+                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-charcoal px-2 py-1 text-[8px] text-white group-hover:block">
+                    {item.date}: {item.count}
+                  </span>
+                </div>
+              ))}
           {!loading && analytics?.dailyTryOns.length === 0 && (
             <p className="m-auto text-sm text-muted-foreground">No activity in this period.</p>
           )}
@@ -301,34 +306,32 @@ function AdminAnalyticsPageContent() {
             Category Performance
           </h2>
           <div className="mt-5 space-y-5">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex justify-between">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-4 w-1/6" />
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-4 w-1/4" />
+                      <Skeleton className="h-4 w-1/6" />
+                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
                   </div>
-                  <Skeleton className="h-2 w-full rounded-full" />
-                </div>
-              ))
-            ) : (
-              analytics?.categoryPerformance.map((item) => (
-                <div key={item.category} className="space-y-2">
-                  <div className="flex justify-between text-xs font-semibold text-charcoal">
-                    <span className="capitalize">{item.category}</span>
-                    <span>
-                      {item.tryOnCount} · {item.percentage}%
-                    </span>
+                ))
+              : analytics?.categoryPerformance.map((item) => (
+                  <div key={item.category} className="space-y-2">
+                    <div className="flex justify-between text-xs font-semibold text-charcoal">
+                      <span className="capitalize">{item.category}</span>
+                      <span>
+                        {item.tryOnCount} · {item.percentage}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100">
+                      <div
+                        className="h-full rounded-full bg-[#806B4D]"
+                        style={{ width: `${item.percentage}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100">
-                    <div
-                      className="h-full rounded-full bg-[#806B4D]"
-                      style={{ width: `${item.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
+                ))}
             {!loading && analytics?.categoryPerformance.length === 0 && (
               <p className="text-sm text-muted-foreground">No category activity yet.</p>
             )}
@@ -340,50 +343,51 @@ function AdminAnalyticsPageContent() {
             Top Products
           </h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-2xl border border-neutral-100 p-3 bg-white">
-                  <Skeleton className="h-14 w-12 rounded-lg animate-pulse" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-2/3" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </div>
-              ))
-            ) : (
-              analytics?.topProducts.map((p) => {
-                const isFocused = p.id === focusedProductId;
-                return (
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => (
                   <div
-                    key={p.id}
-                    className={`flex items-center gap-3 rounded-2xl border p-3 transition ${
-                      isFocused
-                        ? "border-gold bg-gold/5 shadow-soft ring-1 ring-gold"
-                        : "border-neutral-100 bg-white"
-                    }`}
+                    key={i}
+                    className="flex items-center gap-3 rounded-2xl border border-neutral-100 p-3 bg-white"
                   >
-                    <img
-                      src={resolveAssetUrl(p.imageUrl)}
-                      alt={p.name}
-                      className="h-14 w-12 rounded-lg object-cover"
-                    />
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-bold text-charcoal flex items-center gap-1.5">
-                        {p.name}
-                        {isFocused && (
-                          <span className="rounded bg-gold/25 px-1.5 py-0.5 text-[8px] font-bold text-[#806B4D] uppercase">
-                            Selected
-                          </span>
-                        )}
-                      </p>
-                      <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                        {p.category} · {p.tryOnCount} try-ons
-                      </p>
+                    <Skeleton className="h-14 w-12 rounded-lg animate-pulse" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-3 w-1/2" />
                     </div>
                   </div>
-                );
-              })
-            )}
+                ))
+              : analytics?.topProducts.map((p) => {
+                  const isFocused = p.id === focusedProductId;
+                  return (
+                    <div
+                      key={p.id}
+                      className={`flex items-center gap-3 rounded-2xl border p-3 transition ${
+                        isFocused
+                          ? "border-gold bg-gold/5 shadow-soft ring-1 ring-gold"
+                          : "border-neutral-100 bg-white"
+                      }`}
+                    >
+                      <img
+                        src={resolveAssetUrl(p.imageUrl)}
+                        alt={p.name}
+                        className="h-14 w-12 rounded-lg object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-charcoal flex items-center gap-1.5">
+                          {p.name}
+                          {isFocused && (
+                            <span className="rounded bg-gold/25 px-1.5 py-0.5 text-[8px] font-bold text-[#806B4D] uppercase">
+                              Selected
+                            </span>
+                          )}
+                        </p>
+                        <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                          {p.category} · {p.tryOnCount} try-ons
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
             {!loading && analytics?.topProducts.length === 0 && (
               <p className="text-sm text-muted-foreground">No product performance data yet.</p>
             )}
@@ -426,11 +430,13 @@ function AdminAnalyticsPageContent() {
 
 export default function AdminAnalyticsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading analytics dashboard...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <p className="text-sm text-muted-foreground">Loading analytics dashboard...</p>
+        </div>
+      }
+    >
       <AdminAnalyticsPageContent />
     </Suspense>
   );

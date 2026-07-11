@@ -31,7 +31,6 @@ export interface Product {
   isActive?: boolean;
 }
 
-
 export const products: Product[] = [
   {
     id: "p1",

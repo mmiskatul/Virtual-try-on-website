@@ -163,93 +163,91 @@ function AdminCollectionsPageContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 text-xs font-semibold text-charcoal">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, idx) => (
-                  <tr key={idx} className="transition hover:bg-neutral-50/40">
-                    <td className="flex items-center gap-4 p-5 pl-8">
-                      <Skeleton className="h-11 w-11 rounded-lg" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-28" />
-                        <Skeleton className="h-3 w-16" />
-                      </div>
-                    </td>
-                    <td className="p-5">
-                      <Skeleton className="h-4 w-16" />
-                    </td>
-                    <td className="p-5">
-                      <Skeleton className="h-5 w-12 rounded-full" />
-                    </td>
-                    <td className="p-5">
-                      <Skeleton className="h-4 w-8" />
-                    </td>
-                    <td className="p-5">
-                      <Skeleton className="h-4 w-20" />
-                    </td>
-                    <td className="p-5 pr-8 text-right flex justify-end gap-2 items-center h-full mt-2.5">
-                      <Skeleton className="h-8 w-8 rounded-lg" />
-                      <Skeleton className="h-8 w-8 rounded-lg" />
-                      <Skeleton className="h-8 w-8 rounded-lg" />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                products.map((product) => (
-                <tr key={product.id} className="transition hover:bg-neutral-50/40">
-                  <td className="flex items-center gap-4 p-5 pl-8">
-                    <img
-                      src={resolveAssetUrl(product.image)}
-                      alt={product.name}
-                      className="h-11 w-11 rounded-lg object-cover"
-                    />
-                    <div>
-                      <p>{product.name}</p>
-                      <p className="mt-0.5 text-[9px] uppercase text-muted-foreground">
-                        ID: {product.id}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="p-5 font-medium capitalize text-neutral-500">
-                    {product.category}
-                  </td>
-                  <td className="p-5">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase ${product.isActive === false ? "bg-neutral-100 text-neutral-500" : "bg-emerald-50 text-emerald-600"}`}
-                    >
-                      {product.isActive === false ? "Inactive" : "Live"}
-                    </span>
-                  </td>
-                  <td className="p-5 text-neutral-500">{product.tryOnCount}</td>
-                  <td className="p-5 text-neutral-500">
-                    {product.lastTryOnAt
-                      ? new Date(product.lastTryOnAt).toLocaleDateString()
-                      : "Never"}
-                  </td>
-                  <td className="p-5 pr-8 text-right">
-                    <Link
-                      href={`/admin/products/${product.id}`}
-                      aria-label={`Edit ${product.name}`}
-                      className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </Link>
-                    <Link
-                      href={`/admin/analytics?product=${product.id}`}
-                      aria-label="View analytics"
-                      className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
-                    >
-                      <BarChart2 className="h-3.5 w-3.5" />
-                    </Link>
-                    <Link
-                      href={`/admin/try-on?product=${product.id}`}
-                      aria-label={`Virtually try on ${product.name}`}
-                      className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                    </Link>
-                  </td>
-                </tr>
-              ))
-              )}
+              {loading
+                ? Array.from({ length: 5 }).map((_, idx) => (
+                    <tr key={idx} className="transition hover:bg-neutral-50/40">
+                      <td className="flex items-center gap-4 p-5 pl-8">
+                        <Skeleton className="h-11 w-11 rounded-lg" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-28" />
+                          <Skeleton className="h-3 w-16" />
+                        </div>
+                      </td>
+                      <td className="p-5">
+                        <Skeleton className="h-4 w-16" />
+                      </td>
+                      <td className="p-5">
+                        <Skeleton className="h-5 w-12 rounded-full" />
+                      </td>
+                      <td className="p-5">
+                        <Skeleton className="h-4 w-8" />
+                      </td>
+                      <td className="p-5">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="p-5 pr-8 text-right flex justify-end gap-2 items-center h-full mt-2.5">
+                        <Skeleton className="h-8 w-8 rounded-lg" />
+                        <Skeleton className="h-8 w-8 rounded-lg" />
+                        <Skeleton className="h-8 w-8 rounded-lg" />
+                      </td>
+                    </tr>
+                  ))
+                : products.map((product) => (
+                    <tr key={product.id} className="transition hover:bg-neutral-50/40">
+                      <td className="flex items-center gap-4 p-5 pl-8">
+                        <img
+                          src={resolveAssetUrl(product.image)}
+                          alt={product.name}
+                          className="h-11 w-11 rounded-lg object-cover"
+                        />
+                        <div>
+                          <p>{product.name}</p>
+                          <p className="mt-0.5 text-[9px] uppercase text-muted-foreground">
+                            ID: {product.id}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="p-5 font-medium capitalize text-neutral-500">
+                        {product.category}
+                      </td>
+                      <td className="p-5">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase ${product.isActive === false ? "bg-neutral-100 text-neutral-500" : "bg-emerald-50 text-emerald-600"}`}
+                        >
+                          {product.isActive === false ? "Inactive" : "Live"}
+                        </span>
+                      </td>
+                      <td className="p-5 text-neutral-500">{product.tryOnCount}</td>
+                      <td className="p-5 text-neutral-500">
+                        {product.lastTryOnAt
+                          ? new Date(product.lastTryOnAt).toLocaleDateString()
+                          : "Never"}
+                      </td>
+                      <td className="p-5 pr-8 text-right">
+                        <Link
+                          href={`/admin/products/${product.id}`}
+                          aria-label={`Edit ${product.name}`}
+                          className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Link>
+                        <Link
+                          href={`/admin/analytics?product=${product.id}`}
+                          aria-label="View analytics"
+                          className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
+                        >
+                          <BarChart2 className="h-3.5 w-3.5" />
+                        </Link>
+                        <Link
+                          href={`/admin/try-on?product=${product.id}`}
+                          aria-label={`Virtually try on ${product.name}`}
+                          className="inline-flex rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-charcoal"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>
@@ -297,11 +295,13 @@ function AdminCollectionsPageContent() {
 
 export default function AdminCollectionsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading collections...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <p className="text-sm text-muted-foreground">Loading collections...</p>
+        </div>
+      }
+    >
       <AdminCollectionsPageContent />
     </Suspense>
   );

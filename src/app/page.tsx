@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Sparkles,
-  Volume2,
-  Maximize2,
-} from "lucide-react";
+import { ArrowRight, Sparkles, Volume2, Maximize2 } from "lucide-react";
 
 import heroImg from "@/assets/hero-model.jpg";
 import p1 from "@/assets/p1.jpg";
@@ -17,6 +12,28 @@ import p7 from "@/assets/p7.jpg";
 import stepCapture from "@/assets/step_capture.png";
 import stepFitting from "@/assets/step_fitting.png";
 import stepCuration from "@/assets/step_curation.png";
+
+interface ApiProduct {
+  id: string;
+  name: string;
+  gender?: string;
+  category: string;
+  price: number;
+  image_url: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+interface LandingProduct {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  image: string;
+  gender?: string;
+  description?: string;
+  isActive?: boolean;
+}
 
 export const metadata: Metadata = {
   title: "AI Fit Studio - Try Outfits Virtually Before You Buy",
@@ -30,7 +47,12 @@ export const metadata: Metadata = {
 
 function resolveAssetUrl(path: string | null | undefined): string {
   if (!path) return "";
-  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:") || path.startsWith("blob:")) {
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:") ||
+    path.startsWith("blob:")
+  ) {
     return path;
   }
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -39,13 +61,13 @@ function resolveAssetUrl(path: string | null | undefined): string {
   return `${normalizedBase}${normalizedPath}`;
 }
 
-async function getProducts() {
+async function getProducts(): Promise<LandingProduct[]> {
   try {
     const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const res = await fetch(`${apiBase}/api/products`, { next: { revalidate: 10 } });
     if (!res.ok) return [];
-    const data = await res.json();
-    return data.map((product: any) => ({
+    const data = (await res.json()) as ApiProduct[];
+    return data.map((product) => ({
       id: product.id,
       name: product.name,
       gender: product.gender,
@@ -55,7 +77,7 @@ async function getProducts() {
       description: product.description,
       isActive: product.is_active,
     }));
-  } catch (e) {
+  } catch {
     console.error("Failed to fetch products.");
     return [];
   }
@@ -63,9 +85,9 @@ async function getProducts() {
 
 export default async function Home() {
   const products = await getProducts();
-  const activeProducts = products.filter((p: any) => p.isActive !== false);
+  const activeProducts = products.filter((product) => product.isActive !== false);
 
-  const fallbackItems = [
+  const fallbackItems: LandingProduct[] = [
     {
       id: "sculpted-wool-overcoat",
       category: "CHARCOAL / TAILORED",
@@ -133,7 +155,7 @@ export default async function Home() {
                   alt="Virtual try-on preview"
                   className="h-full w-full object-cover object-center"
                 />
-                
+
                 {/* Acrylic Overlay */}
                 <div className="absolute inset-4 flex flex-col justify-between pointer-events-none">
                   {/* Top Row */}
@@ -185,7 +207,7 @@ export default async function Home() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Mockup Camera Footer */}
               <div className="flex items-center justify-between pt-3 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
                 <span>AI Fit Studio - Home</span>
@@ -203,44 +225,55 @@ export default async function Home() {
             Partners of Global Brands
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-16 gap-y-6 text-2xl font-light text-neutral-400 font-display">
-            <span className="tracking-widest uppercase hover:text-charcoal transition">Lumière</span>
-            <span className="font-semibold italic tracking-wider hover:text-charcoal transition font-display">Vogue</span>
+            <span className="tracking-widest uppercase hover:text-charcoal transition">
+              Lumière
+            </span>
+            <span className="font-semibold italic tracking-wider hover:text-charcoal transition font-display">
+              Vogue
+            </span>
             <span className="tracking-wider hover:text-charcoal transition">Élégance</span>
-            <span className="tracking-widest font-normal hover:text-charcoal transition">Haute</span>
-            <span className="border border-neutral-300 px-3 py-1 text-base tracking-widest uppercase font-sans hover:text-charcoal transition">Muse</span>
+            <span className="tracking-widest font-normal hover:text-charcoal transition">
+              Haute
+            </span>
+            <span className="border border-neutral-300 px-3 py-1 text-base tracking-widest uppercase font-sans hover:text-charcoal transition">
+              Muse
+            </span>
           </div>
         </div>
       </section>
 
       {/* Interactive Process Flow */}
-      <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 border-t border-border/40">
+      <section
+        id="how-it-works"
+        className="mx-auto max-w-7xl px-5 py-20 sm:px-8 border-t border-border/40"
+      >
         <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#806B4D]">
           How it works
         </span>
         <h2 className="mt-2 font-display text-4xl text-charcoal sm:text-5xl">
           Atelier Craft meets Neural Code
         </h2>
-        
+
         <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
               num: "01",
               title: "Digital Capture",
               desc: "Upload a clean, high-resolution front-facing photo. Our vision algorithms instantly build a unique structural body map.",
-              img: stepCapture.src
+              img: stepCapture.src,
             },
             {
               num: "02",
               title: "Atelier Curation",
               desc: "Select a luxury silhouette from our digital showroom. Each piece is modeled down to the exact thread weight and weave.",
-              img: stepCuration.src
+              img: stepCuration.src,
             },
             {
               num: "03",
               title: "Neural Fitting",
               desc: "Watch our physical simulators compute fabric gravity, volume, and drape for an indistinguishable mirror reflection.",
-              img: stepFitting.src
-            }
+              img: stepFitting.src,
+            },
           ].map((step) => (
             <div key={step.num} className="group space-y-5">
               <div className="relative overflow-hidden rounded-2xl aspect-[4/3] bg-neutral-100 border border-neutral-100 shadow-soft">
@@ -266,22 +299,26 @@ export default async function Home() {
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#806B4D]">
               Limited Release
             </span>
-            <h2 className="font-display text-4xl text-charcoal sm:text-5xl">
-              Collection
-            </h2>
+            <h2 className="font-display text-4xl text-charcoal sm:text-5xl">Collection</h2>
           </div>
           <div className="flex gap-2">
-            <button className="grid h-10 w-10 place-items-center rounded-full border border-border bg-white text-charcoal hover:bg-neutral-50 transition" aria-label="Previous">
+            <button
+              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-white text-charcoal hover:bg-neutral-50 transition"
+              aria-label="Previous"
+            >
               <span className="text-lg">←</span>
             </button>
-            <button className="grid h-10 w-10 place-items-center rounded-full border border-border bg-white text-charcoal hover:bg-neutral-50 transition" aria-label="Next">
+            <button
+              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-white text-charcoal hover:bg-neutral-50 transition"
+              aria-label="Next"
+            >
               <span className="text-lg">→</span>
             </button>
           </div>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {displayItems.map((item: any, idx: number) => (
+          {displayItems.map((item, idx) => (
             <div key={item.id || idx} className="group relative space-y-4">
               <Link href={`/collection/${item.id}`} className="block cursor-pointer">
                 <div className="overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-100 border border-neutral-100 shadow-soft relative">
@@ -292,7 +329,7 @@ export default async function Home() {
                   />
                 </div>
               </Link>
-              
+
               {/* Floating Try On Virtually Action */}
               <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition duration-300 z-10">
                 <Link
@@ -329,7 +366,8 @@ export default async function Home() {
             Redefine Your Shopping Experience
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-neutral-400 sm:text-base">
-            Join the thousands of fashion-forward individuals using AI Fit Studio to find their perfect look without leaving home.
+            Join the thousands of fashion-forward individuals using AI Fit Studio to find their
+            perfect look without leaving home.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link

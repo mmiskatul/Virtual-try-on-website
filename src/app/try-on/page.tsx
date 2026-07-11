@@ -101,7 +101,7 @@ function TryOnContent() {
       .catch((err) => {
         console.error("Could not pre-select product.");
       });
-  }, [initialId]);
+  }, [initialId, initialSize]);
 
   // Auto-select size when selected product changes
   useEffect(() => {
@@ -116,7 +116,7 @@ function TryOnContent() {
     } else {
       setSelectedSize("");
     }
-  }, [selected]);
+  }, [selected, selectedSize]);
 
   const cats = ["all", ...Array.from(new Set(products.map((p) => p.category)))];
   const filtered = products.filter(
@@ -500,7 +500,10 @@ function TryOnContent() {
             {loadingProducts ? (
               <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="space-y-3 rounded-2xl border border-neutral-100 p-3 bg-white">
+                  <div
+                    key={i}
+                    className="space-y-3 rounded-2xl border border-neutral-100 p-3 bg-white"
+                  >
                     <Skeleton className="aspect-[3/4] w-full rounded-xl" />
                     <Skeleton className="h-4 w-2/3" />
                     <Skeleton className="h-4 w-1/3" />
