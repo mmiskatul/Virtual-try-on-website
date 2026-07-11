@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { use, useState } from "react";
-import { Sparkles, ShoppingBag, ArrowLeft, ShieldCheck, Info, ChevronDown } from "lucide-react";
+import { use, useState, useEffect } from "react";
+import { Sparkles, ShoppingBag, ArrowLeft } from "lucide-react";
+import { getProduct, resolveAssetUrl } from "@/lib/api";
 
 import p1 from "@/assets/p1.jpg";
 import p3 from "@/assets/p3.jpg";
@@ -72,7 +73,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const resolvedParams = use(params);
   const productId = resolvedParams.productId;
   
-  const product = products.find((p) => p.id === productId) || products[0];
+  const fallbackProduct = products.find((p) => p.id === productId) || products[0];
+  const [product, setProduct] = useState<any>(fallbackProduct);
+
+  useEffect(() => {
+    getProduct(productId).then((loadedProduct) => {
+      if (loadedProduct) {
+        setProduct(loadedProduct);
+      }
+    }).catch((err) => {
+      console.error("Failed to load product details from API:", err);
+    });
+  }, [productId]);
 
   const [selectedSize, setSelectedSize] = useState("S");
   const [activeTab, setActiveTab] = useState<"physics" | "materials" | "returns">("physics");
@@ -96,7 +108,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         <div className="lg:col-span-6">
           <div className="overflow-hidden rounded-3xl border border-neutral-100 bg-[#f9f8f6] aspect-[4/5] shadow-soft">
             <img
-              src={product.image}
+              src={resolveAssetUrl(product.image)}
               alt={product.name}
               className="h-full w-full object-cover object-center"
             />
@@ -182,12 +194,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             <div className="text-[11px] leading-relaxed text-muted-foreground min-h-[60px]">
               {activeTab === "physics" && (
                 <p>
-                  This garment features integrated structural mesh simulation files. In the Try-on Studio, our fabric mechanics calculator parses the drape density and elasticity constants of {product.name.toLowerCase()} against body maps, ensuring a highly accurate fit preview.
+                  This garment features integrated structural mesh simulation files. In the Try-on Studio, our fabric mechanics calculator parses the drape density and elasticity constants of {(product.name || "garment").toLowerCase()} against body maps, ensuring a highly accurate fit preview.
                 </p>
               )}
               {activeTab === "materials" && (
                 <p>
-                  Crafted using atelier grade materials: {product.materials} We prioritize environmental durability and luxury texturing. Refer to care labels for washing parameters.
+                  Crafted using atelier grade materials: {product.materials || "Premium organic fibers. Dry clean only."} We prioritize environmental durability and luxury texturing. Refer to care labels for washing parameters.
                 </p>
               )}
               {activeTab === "returns" && (
