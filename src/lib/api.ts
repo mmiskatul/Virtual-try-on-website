@@ -1,4 +1,4 @@
-import { products as fallbackProducts, type Product } from "@/lib/products";
+import { type Product } from "@/lib/products";
 
 export interface TryOnResult {
   id: string;
@@ -224,18 +224,20 @@ export async function getProducts(): Promise<Product[]> {
     const data = await request<BackendProduct[]>("/api/products");
     return data.map(normalizeProduct);
   } catch {
-    return fallbackProducts;
+    return [];
   }
 }
+
 
 export async function getProduct(productId: string): Promise<Product | null> {
   try {
     const data = await request<BackendProduct>(`/api/products/${productId}`);
     return normalizeProduct(data);
   } catch {
-    return fallbackProducts.find((product) => product.id === productId) ?? null;
+    return null;
   }
 }
+
 
 export async function uploadUserPhoto(file: File): Promise<string> {
   const formData = new FormData();

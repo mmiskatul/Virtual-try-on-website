@@ -4,8 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react";
 
-import { generateTryOn, getProducts, resolveAssetUrl, uploadUserPhoto } from "@/lib/api";
-import { products as fallbackProducts, type Gender, type Product } from "@/lib/products";
+import { generateTryOn, getProduct, getProducts, resolveAssetUrl, uploadUserPhoto } from "@/lib/api";
+import { type Gender, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/site/ProductCard";
 
 const LOADING_STEPS = [
@@ -34,12 +34,10 @@ function TryOnContent() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const initialId = searchParams.get("product");
-  const [products, setProducts] = useState<Product[]>(fallbackProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [photo, setPhoto] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Product | null>(
-    initialId ? (fallbackProducts.find((p) => p.id === initialId) ?? null) : null,
-  );
+  const [selected, setSelected] = useState<Product | null>(null);
   const [genderFilter, setGenderFilter] = useState<"all" | Gender>("all");
   const [catFilter, setCatFilter] = useState<string>("all");
   const [dragOver, setDragOver] = useState(false);
@@ -49,6 +47,7 @@ function TryOnContent() {
   const [error, setError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
 
+  // Restore previously uploaded photo from session
   useEffect(() => {
     const p = sessionStorage.getItem("tryon:photo");
     if (p) {
@@ -57,20 +56,24 @@ function TryOnContent() {
     }
   }, []);
 
+  // Load all backend products for the outfit picker
   useEffect(() => {
     getProducts().then((loadedProducts) => {
       setProducts(loadedProducts);
-      if (!initialId) return;
-      const product = loadedProducts.find((p) => p.id === initialId);
-      if (product) setSelected(product);
-    });
-  }, [initialId]);
+    }).catch(() => setProducts([]));
+  }, []);
 
+  // If a product ID is passed via ?product=, fetch it directly from the backend
   useEffect(() => {
     if (!initialId) return;
-    const product = products.find((p) => p.id === initialId);
-    if (product) setSelected(product);
-  }, [initialId, products]);
+    getProduct(initialId)
+      .then((loadedProduct) => {
+        if (loadedProduct) setSelected(loadedProduct);
+      })
+      .catch((err) => {
+        console.error("Could not pre-select product:", err);
+      });
+  }, [initialId]);
 
   const cats = ["all", ...Array.from(new Set(products.map((p) => p.category)))];
   const filtered = products.filter(
