@@ -363,24 +363,46 @@ function normalizeAdminStudioSettings(data: BackendAdminStudioSettings): AdminSt
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL.replace(/\/$/, "")}${path}`, {
-    ...options,
-    credentials: "include",
-    headers: {
-      ...(options?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
-      ...options?.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL.replace(/\/$/, "")}${path}`, {
+      ...options,
+      credentials: "include",
+      headers: {
+        ...(options?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+        ...options?.headers,
+      },
+    });
+  } catch {
+    throw new Error("Unable to reach the server. Check your connection and try again.");
+  }
 
   if (!response.ok) {
-    let detail = "Request failed.";
+    let detail = response.statusText || "Request failed.";
     try {
       const body = await response.json();
-      detail = body.detail ?? detail;
+      if (typeof body?.detail === "string") {
+        detail = body.detail;
+      } else if (Array.isArray(body?.detail)) {
+        detail = body.detail
+          .map((item: unknown) => {
+            if (typeof item === "string") {
+              return item;
+            }
+            if (item && typeof item === "object" && "msg" in item) {
+              return String((item as { msg?: unknown }).msg ?? "");
+            }
+            return "";
+          })
+          .filter(Boolean)
+          .join(", ");
+      } else if (typeof body?.message === "string") {
+        detail = body.message;
+      }
     } catch {
       // Keep clean fallback message.
     }
-    throw new Error(detail);
+    throw new Error(detail || "Request failed.");
   }
 
   if (response.status === 204) {

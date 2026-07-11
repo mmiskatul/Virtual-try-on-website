@@ -13,6 +13,8 @@ import {
   Shield,
   Search,
   Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
@@ -23,6 +25,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const { username, isAuthenticated, loading, login, logout } = useAdminAuth();
   const [loginUsername, setLoginUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [adminSearch, setAdminSearch] = useState("");
@@ -33,8 +36,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
     setLoginError(null);
 
     try {
-      await login(loginUsername, password);
+      const normalizedUsername = loginUsername.trim();
+      if (!normalizedUsername || !password) {
+        throw new Error("Username and password are required.");
+      }
+      setLoginUsername(normalizedUsername);
+      await login(normalizedUsername, password);
       setPassword("");
+      setShowPassword(false);
       router.replace("/admin/dashboard");
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : "Could not log in.");
@@ -87,6 +96,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <input
                 value={loginUsername}
                 onChange={(event) => setLoginUsername(event.target.value)}
+                onBlur={() => setLoginUsername((current) => current.trim())}
                 placeholder="admin"
                 autoComplete="username"
                 className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
@@ -96,13 +106,24 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Password
               </span>
-              <input
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                type="password"
-                autoComplete="current-password"
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              />
+              <div className="relative">
+                <input
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="w-full rounded-2xl border border-border bg-background py-3 pl-4 pr-12 text-sm outline-none transition focus:border-charcoal"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute inset-y-0 right-0 grid w-12 place-items-center text-muted-foreground transition hover:text-foreground"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </label>
             {loginError && (
               <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
