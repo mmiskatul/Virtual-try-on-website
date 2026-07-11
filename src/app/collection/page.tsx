@@ -5,73 +5,15 @@ import Link from "next/link";
 import { Search, Sparkles } from "lucide-react";
 import { getProducts, resolveAssetUrl } from "@/lib/api";
 
-import p1 from "@/assets/p1.jpg";
-import p3 from "@/assets/p3.jpg";
-import p5 from "@/assets/p5.jpg";
-import p6 from "@/assets/p6.jpg";
-import p7 from "@/assets/p7.jpg";
-
-import newArrivalTrench from "@/assets/new_arrival_trench.png";
-import sculptedTote from "@/assets/sculpted_tote.png";
-
 export default function Collection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [productsList, setProductsList] = useState<any[]>([]);
 
-  const displayProducts = [
-    {
-      id: "sculpted-wool-overcoat",
-      name: "Sculpted Wool Overcoat",
-      category: "CHARCOAL / TAILORED",
-      price: 1250,
-      image: p7.src,
-    },
-    {
-      id: "silk-bias-midi-dress",
-      name: "Silk Bias Midi Dress",
-      category: "CHAMPAGNE / EVENING",
-      price: 890,
-      image: p5.src,
-    },
-    {
-      id: "pleated-crepe-trousers",
-      name: "Pleated Crepe Trousers",
-      category: "ESPRESSO / TAILORED",
-      price: 450,
-      image: p3.src,
-    },
-    {
-      id: "cloud-cashmere-knit",
-      name: "Cloud Cashmere Knit",
-      category: "OATMEAL / RELAXED",
-      price: 820,
-      image: p1.src,
-    },
-    {
-      id: "the-sculpted-tote",
-      name: "The Sculpted Tote",
-      category: "MAHOGANY / CALFSKIN",
-      price: 1500,
-      image: sculptedTote.src,
-    },
-    {
-      id: "the-signature-blazer",
-      name: "The Signature Blazer",
-      category: "ONYX / PRIMA",
-      price: 1100,
-      image: p6.src,
-    },
-  ];
-
   useEffect(() => {
-    setProductsList(displayProducts);
-    
     getProducts().then((loadedProducts) => {
       if (loadedProducts && loadedProducts.length > 0) {
         const activeProducts = loadedProducts.filter((p) => p.isActive !== false);
-        if (activeProducts.length > 0) {
-          setProductsList(activeProducts);
-        }
+        setProductsList(activeProducts);
       }
     }).catch((err) => {
       console.error("Failed to load products from api:", err);
@@ -155,48 +97,22 @@ export default function Collection() {
         </div>
       </section>
 
-      {/* Asymmetric Product Grid */}
+      {/* Dynamic Product Grid */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {/* Column 1 */}
-          <div className="space-y-8">
-            {filteredProducts
-              .filter((_, idx) => idx % 2 === 0)
-              .map((p) => (
-                <ProductCardItem key={p.id} item={p} />
-              ))}
+        {filteredProducts.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-border py-24 text-center bg-[#FAF9F6]/20">
+            <Sparkles className="mx-auto h-8 w-8 text-[#806B4D] animate-pulse" />
+            <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+              No products found in the collection.
+            </p>
           </div>
-
-          {/* Column 2 */}
-          <div className="space-y-8">
-            {filteredProducts
-              .filter((_, idx) => idx % 2 === 1)
-              .map((p) => (
-                <ProductCardItem key={p.id} item={p} />
-              ))}
+        ) : (
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredProducts.map((p) => (
+              <ProductCardItem key={p.id} item={p} />
+            ))}
           </div>
-
-          {/* Column 3 - Large Card Spanning 2 rows */}
-          {!searchQuery && (
-            <div className="lg:row-span-2 h-full flex flex-col justify-between gap-8">
-              <div className="group relative overflow-hidden rounded-2xl border border-neutral-100 bg-[#f9f8f6] aspect-[4/5] lg:aspect-auto lg:flex-1 shadow-soft flex flex-col justify-between">
-                <img
-                  src={newArrivalTrench.src}
-                  alt="New Arrival Trench"
-                  className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                
-                {/* Top Label */}
-                <div className="relative p-6">
-                  <span className="inline-block bg-[#806B4D] px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-white">
-                    New Arrival
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </section>
 
       {/* Pagination */}
@@ -275,11 +191,17 @@ export default function Collection() {
 
                   {/* Right Column (Realistic Texture) */}
                   <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/50 aspect-[3/4] p-4 flex flex-col justify-between relative font-sans">
-                    <img
-                      src={p5.src}
-                      alt="Texture close-up"
-                      className="absolute inset-0 h-full w-full object-cover object-center opacity-85"
-                    />
+                    {filteredProducts[0]?.image ? (
+                      <img
+                        src={resolveAssetUrl(filteredProducts[0].image)}
+                        alt="Texture close-up"
+                        className="absolute inset-0 h-full w-full object-cover object-center opacity-85"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
+                        <Sparkles className="h-6 w-6 text-[#806B4D]/40" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/35" />
                     
                     <div className="relative flex justify-end">
