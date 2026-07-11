@@ -12,7 +12,7 @@ export function Navbar() {
   const links = [
     { href: "/collection", label: "Gallery" },
     { href: "/try-on", label: "Try-On Studio" },
-    { href: "/#how-it-works", label: "How it Works" },
+    { href: "/how-it-works", label: "How it Works" },
     { href: "/#about", label: "About" },
   ] as const;
 
