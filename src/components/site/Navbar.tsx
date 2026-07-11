@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Sparkles, ShoppingBag, User, Search } from "lucide-react";
+import { Menu, X, Sparkles, ShoppingBag, Search } from "lucide-react";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -75,26 +75,11 @@ export function Navbar() {
         {/* Right Actions */}
         <div className="flex items-center gap-4">
           <Link
-            href="/collection"
+            href="/cart"
             className="text-muted-foreground transition hover:text-foreground"
             aria-label="Cart"
           >
             <ShoppingBag className="h-4.5 w-4.5" />
-          </Link>
-          
-          <Link
-            href="/admin"
-            className="text-muted-foreground transition hover:text-foreground"
-            aria-label="Profile"
-          >
-            <User className="h-4.5 w-4.5" />
-          </Link>
-
-          <Link
-            href="/admin"
-            className="hidden rounded-lg bg-charcoal px-5 py-2 text-xs font-semibold uppercase tracking-wider text-white shadow-soft transition hover:opacity-90 md:inline-flex"
-          >
-            Sign In
           </Link>
 
           <button
@@ -121,13 +106,6 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
-            <Link
-              href="/admin"
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded-lg bg-charcoal px-5 py-3 text-center text-sm font-medium text-white"
-            >
-              Sign In
-            </Link>
           </div>
         </div>
       )}
