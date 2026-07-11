@@ -176,7 +176,6 @@ function TryOnContent() {
         product_id: selected.id,
         selected_size: selectedSize,
         user_body_size: userBodySize,
-        user_size_details: userSizeDetails.trim() || undefined,
         prompt_optional: prompt.trim() || undefined,
       });
       window.clearInterval(progress);
@@ -394,23 +393,6 @@ function TryOnContent() {
                 </div>
               )}
 
-              <div className="border-t border-border pt-4 space-y-2">
-                <label className="grid gap-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    My Sizing / Body Details
-                  </span>
-                  <input
-                    type="text"
-                    value={userSizeDetails}
-                    onChange={(event) => setUserSizeDetails(event.target.value)}
-                    placeholder="e.g. Height: 5'8, Chest: 38 in, fitted/oversized"
-                    className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-xs outline-none transition focus:border-charcoal"
-                  />
-                </label>
-                <p className="text-[10px] text-muted-foreground leading-normal">
-                  Provide body details (like height, chest/waist measurements) or fit preferences to help the AI generate the perfect drape.
-                </p>
-              </div>
             </div>
           )}
 
