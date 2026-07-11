@@ -134,7 +134,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               { label: "Collections", href: "/miskat/admin/collection", icon: Layers3 },
               { label: "Try-On Sessions", href: "/miskat/admin/history", icon: UserCheck },
               { label: "Analytics", href: "/miskat/admin/dashboard", icon: TrendingUp },
-              { label: "Settings", href: "/miskat/admin/dashboard", icon: Settings },
+              { label: "Settings", href: "/miskat/admin/settings", icon: Settings },
             ].map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href;
