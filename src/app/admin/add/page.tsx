@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ImagePlus, Save } from "lucide-react";
+import { toast } from "sonner";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
@@ -23,6 +24,7 @@ const defaultCategories: CategoryOption[] = [
   { value: "panjabi", label: "Panjabi" },
 ];
 const genders: Gender[] = ["female", "male", "unisex"];
+const PRODUCT_DRAFT_KEY = "ai-fit-studio:admin:add-product-draft";
 
 function slugify(value: string): string {
   return value
@@ -58,8 +60,106 @@ export default function AdminAddProductPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [discardingDraft, setDiscardingDraft] = useState(false);
+  const discardingDraftRef = useRef(false);
 
   const productId = useMemo(() => slugify(name), [name]);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(PRODUCT_DRAFT_KEY);
+      if (saved) {
+        const draft = JSON.parse(saved) as Partial<Record<string, unknown>>;
+        if (typeof draft.name === "string") setName(draft.name);
+        if (typeof draft.gender === "string") setGender(draft.gender as Gender);
+        if (typeof draft.category === "string") setCategory(draft.category);
+        if (typeof draft.newCategoryName === "string") setNewCategoryName(draft.newCategoryName);
+        if (typeof draft.price === "string") setPrice(draft.price);
+        if (typeof draft.description === "string") setDescription(draft.description);
+        if (typeof draft.materials === "string") setMaterials(draft.materials);
+        if (Array.isArray(draft.availableSizes))
+          setAvailableSizes(
+            draft.availableSizes.filter((item): item is string => typeof item === "string"),
+          );
+        if (typeof draft.sizeDetails === "string") setSizeDetails(draft.sizeDetails);
+        if (typeof draft.coverage === "string") setCoverage(draft.coverage);
+        if (typeof draft.fitType === "string") setFitType(draft.fitType);
+        if (typeof draft.clothType === "string") setClothType(draft.clothType);
+        if (typeof draft.color === "string") setColor(draft.color);
+        if (typeof draft.occasion === "string") setOccasion(draft.occasion);
+        if (typeof draft.careInstructions === "string") setCareInstructions(draft.careInstructions);
+        if (typeof draft.brand === "string") setBrand(draft.brand);
+        if (typeof draft.imageUrl === "string") {
+          setImageUrl(draft.imageUrl);
+          setPreviewUrl(resolveAssetUrl(draft.imageUrl));
+        }
+      }
+    } catch {
+      window.localStorage.removeItem(PRODUCT_DRAFT_KEY);
+    } finally {
+      setDraftReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    try {
+      window.localStorage.setItem(
+        PRODUCT_DRAFT_KEY,
+        JSON.stringify({
+          name,
+          gender,
+          category,
+          newCategoryName,
+          price,
+          description,
+          materials,
+          availableSizes,
+          sizeDetails,
+          coverage,
+          fitType,
+          clothType,
+          color,
+          occasion,
+          careInstructions,
+          brand,
+          imageUrl,
+        }),
+      );
+    } catch {
+      // Draft persistence is best-effort and must not block form editing.
+    }
+  }, [
+    draftReady,
+    name,
+    gender,
+    category,
+    newCategoryName,
+    price,
+    description,
+    materials,
+    availableSizes,
+    sizeDetails,
+    coverage,
+    fitType,
+    clothType,
+    color,
+    occasion,
+    careInstructions,
+    brand,
+    imageUrl,
+  ]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!discardingDraftRef.current && draftReady && (name || description || imageUrl)) {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [discardingDraft, draftReady, name, description, imageUrl]);
 
   useEffect(() => {
     let active = true;
@@ -113,6 +213,7 @@ export default function AdminAddProductPage() {
       setCategory(created.value);
       setNewCategoryName("");
       setMessage(`Saved category ${created.label}.`);
+      toast.success(`Category “${created.label}” added.`);
     } catch (categoryError) {
       setError(categoryError instanceof Error ? categoryError.message : "Could not save category.");
     } finally {
@@ -134,9 +235,11 @@ export default function AdminAddProductPage() {
       const uploadedUrl = await uploadProductImage(file, token);
       setImageUrl(uploadedUrl);
       setPreviewUrl(resolveAssetUrl(uploadedUrl));
+      toast.success("Product image uploaded.");
     } catch (uploadError) {
       setImageUrl("");
       setPreviewUrl("");
+      toast.error("Product image upload failed.");
       setError(
         uploadError instanceof Error ? uploadError.message : "Could not upload product image.",
       );
@@ -214,6 +317,8 @@ export default function AdminAddProductPage() {
       setBrand("");
       setImageUrl("");
       setPreviewUrl("");
+      window.localStorage.removeItem(PRODUCT_DRAFT_KEY);
+      toast.success("Product added successfully.");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save product.");
     } finally {
@@ -222,10 +327,26 @@ export default function AdminAddProductPage() {
   }
 
   return (
-    <div className="grid w-full gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] lg:gap-8 lg:px-8">
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-        <h2 className="text-lg text-foreground">Product image</h2>
-        <label className="mt-5 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-cream/40 px-6 py-12 text-center transition hover:border-charcoal/40">
+    <div className="grid w-full gap-5 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] lg:gap-6 lg:px-8">
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-soft lg:sticky lg:top-4">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg text-foreground">Product image</h2>
+          {draftReady && (name || description || imageUrl) && (
+            <button
+              type="button"
+              onClick={() => {
+                window.localStorage.removeItem(PRODUCT_DRAFT_KEY);
+                discardingDraftRef.current = true;
+                setDiscardingDraft(true);
+                window.location.reload();
+              }}
+              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:text-charcoal"
+            >
+              Clear draft
+            </button>
+          )}
+        </div>
+        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-cream/40 px-6 py-8 text-center transition hover:border-charcoal/40">
           {previewUrl ? (
             <img
               src={previewUrl}
@@ -255,10 +376,10 @@ export default function AdminAddProductPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-3xl border border-border bg-card p-6 shadow-soft"
+        className="rounded-3xl border border-border bg-card p-5 shadow-soft"
       >
         <h2 className="text-lg text-foreground">Outfit details</h2>
-        <div className="mt-6 grid gap-5">
+        <div className="mt-5 grid gap-4">
           <label className="grid gap-2">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Name

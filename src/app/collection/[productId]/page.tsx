@@ -14,9 +14,12 @@ import {
   Calendar,
   Info,
   WashingMachine,
+  type LucideIcon,
 } from "lucide-react";
 import { getProduct, resolveAssetUrl } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import type { Product } from "@/lib/products";
 
 const COVERAGE_LABEL: Record<string, string> = {
   upper: "Upper Body",
@@ -25,20 +28,17 @@ const COVERAGE_LABEL: Record<string, string> = {
   accessory: "Accessory",
 };
 
-export default function ProductDetailsPage({
-  params,
-}: {
-  params: Promise<{ productId: string }>;
-}) {
+export default function ProductDetailsPage({ params }: { params: Promise<{ productId: string }> }) {
   const resolvedParams = use(params);
   const productId = resolvedParams.productId;
 
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [bagAdded, setBagAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "materials" | "care" | "returns">(
-    "details"
+    "details",
   );
 
   useEffect(() => {
@@ -65,6 +65,28 @@ export default function ProductDetailsPage({
       })
       .finally(() => setLoading(false));
   }, [productId]);
+
+  function addToBag() {
+    if (!product) return;
+    try {
+      const stored = JSON.parse(window.localStorage.getItem("ai-fit-studio:bag") || "[]") as Array<{
+        productId: string;
+        size: string;
+        quantity: number;
+      }>;
+      const existing = stored.find(
+        (item) => item.productId === product.id && item.size === selectedSize,
+      );
+      if (existing) existing.quantity += 1;
+      else stored.push({ productId: product.id, size: selectedSize, quantity: 1 });
+      window.localStorage.setItem("ai-fit-studio:bag", JSON.stringify(stored));
+      window.dispatchEvent(new Event("bag-change"));
+      setBagAdded(true);
+      toast.success(`${product.name} added to your bag.`);
+    } catch {
+      toast.error("Could not add this item to your bag.");
+    }
+  }
 
   // Loading state
   if (loading) {
@@ -136,8 +158,7 @@ export default function ProductDetailsPage({
           This product doesn&apos;t exist
         </h1>
         <p className="text-sm text-muted-foreground text-center max-w-sm">
-          The product with ID{" "}
-          <span className="font-mono text-charcoal">{productId}</span> could not
+          The product with ID <span className="font-mono text-charcoal">{productId}</span> could not
           be found in the collection.
         </p>
         <Link
@@ -156,10 +177,9 @@ export default function ProductDetailsPage({
       ? product.available_sizes
       : ["XS", "S", "M", "L", "XL", "XXL"];
 
-  const tryOnHref =
-    selectedSize
-      ? `/try-on?product=${product.id}&size=${encodeURIComponent(selectedSize)}`
-      : `/try-on?product=${product.id}`;
+  const tryOnHref = selectedSize
+    ? `/try-on?product=${product.id}&size=${encodeURIComponent(selectedSize)}`
+    : `/try-on?product=${product.id}`;
 
   const badges = [
     product.color && { icon: Palette, label: "Color", value: product.color },
@@ -172,7 +192,7 @@ export default function ProductDetailsPage({
     product.fit_type && { icon: Info, label: "Fit", value: product.fit_type },
     product.occasion && { icon: Calendar, label: "Occasion", value: product.occasion },
     product.brand && { icon: Tag, label: "Brand", value: product.brand },
-  ].filter(Boolean) as { icon: any; label: string; value: string }[];
+  ].filter(Boolean) as { icon: LucideIcon; label: string; value: string }[];
 
   return (
     <div className="bg-white min-h-screen pb-24">
@@ -222,14 +242,14 @@ export default function ProductDetailsPage({
           <div>
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#806B4D]">
               {product.category}
-              {product.gender ? ` · ${product.gender.charAt(0).toUpperCase() + product.gender.slice(1)}` : ""}
+              {product.gender
+                ? ` · ${product.gender.charAt(0).toUpperCase() + product.gender.slice(1)}`
+                : ""}
             </span>
             <h1 className="mt-2 font-display text-4xl text-charcoal font-medium leading-tight">
               {product.name}
             </h1>
-            <p className="mt-3 text-2xl font-light text-charcoal/90">
-              ৳{product.price.toFixed(2)}
-            </p>
+            <p className="mt-3 text-2xl font-light text-charcoal/90">৳{product.price.toFixed(2)}</p>
           </div>
 
           {/* At-a-Glance badges */}
@@ -252,9 +272,7 @@ export default function ProductDetailsPage({
 
           {/* Description */}
           {product.description && (
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {product.description}
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
           )}
 
           {/* Size picker */}
@@ -308,9 +326,13 @@ export default function ProductDetailsPage({
               <Sparkles className="h-3.5 w-3.5" />
               <span>Try On in Studio{selectedSize ? ` (Size ${selectedSize})` : ""}</span>
             </Link>
-            <button className="flex-1 inline-flex items-center justify-center gap-2 border border-charcoal/30 hover:bg-charcoal/5 text-charcoal text-xs font-bold uppercase tracking-wider py-4 rounded-xl transition">
+            <button
+              type="button"
+              onClick={addToBag}
+              className="flex-1 inline-flex items-center justify-center gap-2 border border-charcoal/30 hover:bg-charcoal/5 text-charcoal text-xs font-bold uppercase tracking-wider py-4 rounded-xl transition"
+            >
               <ShoppingBag className="h-3.5 w-3.5" />
-              <span>Add to Bag</span>
+              <span>{bagAdded ? "Added to Bag" : "Add to Bag"}</span>
             </button>
           </div>
 
@@ -326,7 +348,9 @@ export default function ProductDetailsPage({
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() =>
+                    setActiveTab(tab.id as "details" | "materials" | "care" | "returns")
+                  }
                   className={`pb-3 relative transition whitespace-nowrap ${
                     activeTab === tab.id ? "text-charcoal" : "hover:text-charcoal"
                   }`}
@@ -345,7 +369,11 @@ export default function ProductDetailsPage({
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
                   {[
                     ["Category", product.category],
-                    ["Gender", product.gender && (product.gender.charAt(0).toUpperCase() + product.gender.slice(1))],
+                    [
+                      "Gender",
+                      product.gender &&
+                        product.gender.charAt(0).toUpperCase() + product.gender.slice(1),
+                    ],
                     ["Color", product.color],
                     ["Cloth Type", product.cloth_type],
                     ["Coverage", product.coverage && COVERAGE_LABEL[product.coverage]],
@@ -353,7 +381,12 @@ export default function ProductDetailsPage({
                     ["Occasion", product.occasion],
                     ["Brand", product.brand],
                     ["Price", product.price && `৳${product.price.toFixed(2)}`],
-                    ["Available Sizes", product.available_sizes && product.available_sizes.length > 0 ? product.available_sizes.join(", ") : null],
+                    [
+                      "Available Sizes",
+                      product.available_sizes && product.available_sizes.length > 0
+                        ? product.available_sizes.join(", ")
+                        : null,
+                    ],
                     ["Sizing Info", product.size_details],
                   ]
                     .filter(([, v]) => v)
@@ -362,9 +395,7 @@ export default function ProductDetailsPage({
                         <p className="text-[9px] font-bold uppercase tracking-wider text-neutral-400">
                           {label}
                         </p>
-                        <p className="mt-0.5 text-[11px] font-semibold text-charcoal">
-                          {value}
-                        </p>
+                        <p className="mt-0.5 text-[11px] font-semibold text-charcoal">{value}</p>
                       </div>
                     ))}
                 </div>
@@ -415,12 +446,13 @@ export default function ProductDetailsPage({
                     Complimentary standard shipping on all orders over $100.
                   </p>
                   <p>
-                    <span className="font-semibold text-charcoal">Returns:</span>{" "}
-                    Accepted within 30 days of delivery in original, unworn condition with tags attached.
+                    <span className="font-semibold text-charcoal">Returns:</span> Accepted within 30
+                    days of delivery in original, unworn condition with tags attached.
                   </p>
                   <p>
-                    <span className="font-semibold text-charcoal">Try-On Guarantee:</span>{" "}
-                    Fits generated via our Try-On Studio are backed by our accuracy assurance — if the fit is wrong, we make it right.
+                    <span className="font-semibold text-charcoal">Try-On Guarantee:</span> Fits
+                    generated via our Try-On Studio are backed by our accuracy assurance — if the
+                    fit is wrong, we make it right.
                   </p>
                 </div>
               )}

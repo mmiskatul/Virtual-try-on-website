@@ -195,6 +195,14 @@ interface BackendCategoryOption {
   label: string;
 }
 
+interface BackendPaginatedProducts {
+  items: BackendProduct[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
 export interface ProductCreateInput {
   id?: string;
   name: string;
@@ -239,6 +247,14 @@ export interface ProductUpdateInput {
 export interface CategoryOption {
   value: string;
   label: string;
+}
+
+export interface PaginatedProducts {
+  items: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface AdminLoginInput {
@@ -445,6 +461,27 @@ export async function getProducts(): Promise<Product[]> {
   }
 }
 
+export async function getProductsPage(options?: {
+  query?: string;
+  category?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<PaginatedProducts> {
+  const params = new URLSearchParams();
+  if (options?.query) params.set("q", options.query);
+  if (options?.category) params.set("category", options.category);
+  params.set("page", String(options?.page ?? 1));
+  params.set("page_size", String(options?.pageSize ?? 24));
+  const data = await request<BackendPaginatedProducts>(`/api/products/paged?${params}`);
+  return {
+    items: data.items.map(normalizeProduct),
+    total: data.total,
+    page: data.page,
+    pageSize: data.page_size,
+    totalPages: data.total_pages,
+  };
+}
+
 export async function getProduct(productId: string): Promise<Product | null> {
   try {
     const data = await request<BackendProduct>(`/api/products/${productId}`);
@@ -488,6 +525,33 @@ export async function createProduct(
 export async function getAdminProducts(token: string | null): Promise<Product[]> {
   const data = await adminRequest<BackendProduct[]>("/api/admin/products", token);
   return data.map(normalizeProduct);
+}
+
+export async function getAdminProductsPage(
+  token: string | null,
+  options?: {
+    query?: string;
+    status?: "all" | "live" | "inactive";
+    page?: number;
+    pageSize?: number;
+  },
+): Promise<PaginatedProducts> {
+  const params = new URLSearchParams();
+  if (options?.query) params.set("q", options.query);
+  if (options?.status) params.set("status", options.status);
+  params.set("page", String(options?.page ?? 1));
+  params.set("page_size", String(options?.pageSize ?? 24));
+  const data = await adminRequest<BackendPaginatedProducts>(
+    `/api/admin/products/paged?${params}`,
+    token,
+  );
+  return {
+    items: data.items.map(normalizeProduct),
+    total: data.total,
+    page: data.page,
+    pageSize: data.page_size,
+    totalPages: data.total_pages,
+  };
 }
 
 export async function getAdminProduct(productId: string, token: string | null): Promise<Product> {

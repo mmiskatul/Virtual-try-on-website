@@ -3,32 +3,50 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Sparkles } from "lucide-react";
-import { getProducts, resolveAssetUrl } from "@/lib/api";
+import { getProductsPage, resolveAssetUrl } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Product } from "@/lib/products";
 
 export default function Collection() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [productsList, setProductsList] = useState<any[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [productsList, setProductsList] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    getProducts().then((loadedProducts) => {
-      if (loadedProducts && loadedProducts.length > 0) {
-        const activeProducts = loadedProducts.filter((p) => p.isActive !== false);
-        setProductsList(activeProducts);
-      }
-    }).catch((err) => {
-      console.error("Failed to load products.");
-    }).finally(() => {
-      setLoading(false);
-    });
-  }, []);
+    setError(null);
+    const timeout = window.setTimeout(
+      () =>
+        getProductsPage({
+          query: searchQuery,
+          category: categoryFilter === "all" ? undefined : categoryFilter,
+          page,
+          pageSize: 12,
+        })
+          .then((result) => {
+            setProductsList(result.items);
+            setTotalProducts(result.total);
+            setTotalPages(result.totalPages);
+          })
+          .catch((loadError) => {
+            setError(loadError instanceof Error ? loadError.message : "Could not load products.");
+          })
+          .finally(() => setLoading(false)),
+      250,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [categoryFilter, page, searchQuery]);
 
   useEffect(() => {
     const handleSearchChange = () => {
       const params = new URLSearchParams(window.location.search);
       setSearchQuery(params.get("search") || "");
+      setPage(1);
     };
 
     window.addEventListener("search-change", handleSearchChange);
@@ -61,11 +79,12 @@ export default function Collection() {
               The Collection
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-              Explore our curated selection of luxury apparel, meticulously designed to blend technological innovation with timeless silhouette.
+              Explore our curated selection of luxury apparel, meticulously designed to blend
+              technological innovation with timeless silhouette.
             </p>
           </div>
           <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground shrink-0 pb-1">
-            {filteredProducts.length} Items Found
+            {totalProducts} Items Found
           </span>
         </div>
       </section>
@@ -75,10 +94,17 @@ export default function Collection() {
         <div className="flex flex-wrap items-center justify-between gap-6">
           {/* Dropdowns */}
           <div className="flex flex-wrap gap-3">
-            {["Category", "Style", "Occasion", "Price Range"].map((filterName) => (
+            {["all", "shirt", "t-shirt", "pant", "kurti", "dress", "panjabi"].map((filterName) => (
               <div key={filterName} className="relative group">
-                <button className="flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-charcoal hover:border-charcoal transition">
-                  {filterName}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategoryFilter(filterName);
+                    setPage(1);
+                  }}
+                  className={`flex items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition ${categoryFilter === filterName ? "border-charcoal bg-charcoal text-white" : "border-border bg-white text-charcoal hover:border-charcoal"}`}
+                >
+                  {filterName === "all" ? "All categories" : filterName}
                   <span className="text-[8px]">▼</span>
                 </button>
               </div>
@@ -86,7 +112,7 @@ export default function Collection() {
           </div>
 
           {/* Active Tags */}
-          <div className="flex items-center flex-wrap gap-2 text-xs">
+          <div className="hidden">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-neutral-50 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-charcoal">
               Outerwear
               <span className="text-[8px] opacity-60 cursor-pointer">✕</span>
@@ -104,7 +130,18 @@ export default function Collection() {
 
       {/* Dynamic Product Grid */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        {loading ? (
+        {error ? (
+          <div className="rounded-3xl border border-red-200 bg-red-50 px-6 py-16 text-center text-sm text-red-700">
+            <p>{error}</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-full bg-charcoal px-5 py-2 text-xs font-semibold text-white"
+            >
+              Retry
+            </button>
+          </div>
+        ) : loading ? (
           <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="space-y-4">
@@ -136,15 +173,46 @@ export default function Collection() {
       </section>
 
       {/* Pagination */}
-      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 flex justify-center border-t border-border/20">
+      <section className="hidden">
         <div className="flex items-center gap-4 text-xs font-semibold tracking-wider text-charcoal">
           <button className="text-muted-foreground hover:text-foreground transition">←</button>
-          <span className="cursor-pointer text-[#806B4D] underline decoration-2 underline-offset-4">01</span>
-          <span className="cursor-pointer text-muted-foreground hover:text-foreground transition">02</span>
-          <span className="cursor-pointer text-muted-foreground hover:text-foreground transition">03</span>
+          <span className="cursor-pointer text-[#806B4D] underline decoration-2 underline-offset-4">
+            01
+          </span>
+          <span className="cursor-pointer text-muted-foreground hover:text-foreground transition">
+            02
+          </span>
+          <span className="cursor-pointer text-muted-foreground hover:text-foreground transition">
+            03
+          </span>
           <span className="text-muted-foreground select-none">...</span>
-          <span className="cursor-pointer text-muted-foreground hover:text-foreground transition">15</span>
+          <span className="cursor-pointer text-muted-foreground hover:text-foreground transition">
+            15
+          </span>
           <button className="text-muted-foreground hover:text-foreground transition">→</button>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-8 flex justify-center">
+        <div className="flex items-center gap-4 text-xs font-semibold tracking-wider text-charcoal">
+          <button
+            type="button"
+            disabled={page <= 1 || loading}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            className="text-muted-foreground transition hover:text-foreground disabled:opacity-30"
+          >
+            ←
+          </button>
+          <span className="text-[#806B4D]">{String(page).padStart(2, "0")}</span>
+          <span className="text-muted-foreground">of {String(totalPages).padStart(2, "0")}</span>
+          <button
+            type="button"
+            disabled={page >= totalPages || loading || totalPages === 0}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            className="text-muted-foreground transition hover:text-foreground disabled:opacity-30"
+          >
+            →
+          </button>
         </div>
       </section>
 
@@ -163,7 +231,8 @@ export default function Collection() {
                 neural physics.
               </h2>
               <p className="max-w-md text-sm leading-relaxed text-neutral-400">
-                Our AI doesn't just overlay clothes—it simulates fabric drape and tension based on your unique biometric data for an indistinguishable virtual mirror experience.
+                Our AI doesn't just overlay clothes—it simulates fabric drape and tension based on
+                your unique biometric data for an indistinguishable virtual mirror experience.
               </p>
               <div className="pt-4">
                 <Link
@@ -183,7 +252,7 @@ export default function Collection() {
                   <span>COLLECTION - AI Fit Studio</span>
                   <span className="text-[#806B4D]">Active Simulation</span>
                 </div>
-                
+
                 {/* Subtitle */}
                 <p className="pt-3 text-[9px] uppercase tracking-widest text-neutral-400 font-bold">
                   Step-by-Step Composition: Digital Wireframe vs. Realistic Simulation
@@ -194,18 +263,24 @@ export default function Collection() {
                   {/* Left Column (Wireframe Grid) */}
                   <div className="relative overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/50 aspect-[3/4] p-4 flex flex-col justify-between">
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#262626_1px,transparent_1px),linear-gradient(to_bottom,#262626_1px,transparent_1px)] bg-[size:14px_24px] opacity-40" />
-                    
+
                     {/* Glowing Mesh Mockup */}
                     <div className="relative flex-1 flex items-center justify-center">
                       <div className="h-28 w-14 rounded-full border border-[#806B4D]/30 bg-gradient-to-b from-[#806B4D]/10 to-transparent flex items-center justify-center">
-                        <span className="text-[9px] font-bold text-[#806B4D]/60 tracking-wider">MESH</span>
+                        <span className="text-[9px] font-bold text-[#806B4D]/60 tracking-wider">
+                          MESH
+                        </span>
                       </div>
                     </div>
 
                     <div className="relative space-y-1">
                       <p className="text-[9px] font-semibold text-white">Structural Data</p>
-                      <p className="text-[7.5px] uppercase tracking-wider text-neutral-500 font-bold">Measurement Integrity</p>
-                      <p className="text-[7.5px] uppercase tracking-wider text-[#806B4D] font-bold">Posture Analysis</p>
+                      <p className="text-[7.5px] uppercase tracking-wider text-neutral-500 font-bold">
+                        Measurement Integrity
+                      </p>
+                      <p className="text-[7.5px] uppercase tracking-wider text-[#806B4D] font-bold">
+                        Posture Analysis
+                      </p>
                     </div>
                   </div>
 
@@ -223,7 +298,7 @@ export default function Collection() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/35" />
-                    
+
                     <div className="relative flex justify-end">
                       <span className="rounded bg-black/60 px-1.5 py-0.5 text-[7px] font-bold tracking-widest text-[#806B4D] uppercase">
                         Render
@@ -231,8 +306,12 @@ export default function Collection() {
                     </div>
 
                     <div className="relative space-y-1">
-                      <p className="text-[9px] font-semibold text-white font-sans">Final Garment Prototype</p>
-                      <p className="text-[7.5px] uppercase tracking-wider text-neutral-300 font-bold">Texture & Draping</p>
+                      <p className="text-[9px] font-semibold text-white font-sans">
+                        Final Garment Prototype
+                      </p>
+                      <p className="text-[7.5px] uppercase tracking-wider text-neutral-300 font-bold">
+                        Texture & Draping
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -250,7 +329,7 @@ export default function Collection() {
   );
 }
 
-function ProductCardItem({ item }: { item: any }) {
+function ProductCardItem({ item }: { item: Product }) {
   return (
     <div className="group relative block space-y-4">
       {/* Product Image Link */}

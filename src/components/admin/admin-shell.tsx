@@ -16,6 +16,8 @@ import {
   Eye,
   EyeOff,
   Shirt,
+  Menu,
+  X,
 } from "lucide-react";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
@@ -32,9 +34,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [adminSearch, setAdminSearch] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    setAdminSearch(pathname === "/admin/collection" ? searchParams.get("q") ?? "" : "");
+    setAdminSearch(pathname === "/admin/collection" ? (searchParams.get("q") ?? "") : "");
   }, [pathname, searchParams]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -156,8 +159,18 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#FAF9F6] flex lg:h-screen lg:overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-border/40 bg-white flex flex-col justify-between p-6 shrink-0 relative lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:overflow-y-auto">
-        <div className="space-y-10">
+      <aside
+        className={`${sidebarOpen ? "flex" : "hidden"} fixed inset-0 z-40 w-full border-r border-border/40 bg-white p-6 flex-col justify-between shrink-0 lg:fixed lg:inset-y-0 lg:left-0 lg:right-auto lg:z-30 lg:flex lg:w-64 lg:overflow-y-auto`}
+      >
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(false)}
+          className="absolute right-5 top-5 grid h-9 w-9 place-items-center rounded-lg border border-border text-charcoal lg:hidden"
+          aria-label="Close admin navigation"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <div className="space-y-6">
           {/* Logo */}
           <div className="space-y-1">
             <h1 className="font-display text-xl text-charcoal font-semibold tracking-tight">
@@ -222,6 +235,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <Link
                   key={item.label}
                   href={item.href}
+                  onClick={() => setSidebarOpen(false)}
                   className={`relative flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-semibold uppercase tracking-wider transition ${
                     active
                       ? "text-[#806B4D] bg-[#FAF9F6]/40"
@@ -243,6 +257,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="space-y-4">
           <Link
             href="/admin/add"
+            onClick={() => setSidebarOpen(false)}
             className="flex items-center justify-center gap-2 w-full bg-charcoal text-white text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl hover:bg-[#806B4D] transition"
           >
             <span>+ New Collection</span>
@@ -262,7 +277,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-64 lg:h-screen lg:overflow-y-auto">
         {/* Header */}
-        <header className="h-16 border-b border-border/40 bg-white flex items-center justify-between px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/40 bg-white px-4 sm:px-8">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="mr-3 grid h-9 w-9 place-items-center rounded-lg border border-border text-charcoal lg:hidden"
+            aria-label="Open admin navigation"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
           {/* Search bar */}
           <form
             onSubmit={handleAdminSearch}

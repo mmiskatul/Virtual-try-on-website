@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import "@/styles.css";
 import { Footer } from "@/components/site/Footer";
 import { Navbar } from "@/components/site/Navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "AI Fit Studio - Virtual Try-On for Fashion",
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

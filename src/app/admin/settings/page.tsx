@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Palette, Save, Sliders, UserRound } from "lucide-react";
+import { toast } from "sonner";
 
 import { useAdminAuth } from "@/components/admin/admin-auth";
 import {
@@ -74,6 +75,7 @@ export default function AdminSettingsPage() {
       const data = await updateAdminSettings(draft, token);
       setSaved(data);
       setMessage("Studio settings saved successfully.");
+      toast.success("Studio settings saved.");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save settings.");
     } finally {
