@@ -94,7 +94,7 @@ export default function Collection() {
               Editorial Selection
             </span>
             <h1 className="font-display text-5xl text-charcoal sm:text-6xl leading-tight">
-              The Winter Collection
+              The Collection
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
               Explore our curated selection of luxury apparel, meticulously designed to blend technological innovation with timeless silhouette.
