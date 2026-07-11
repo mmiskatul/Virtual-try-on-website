@@ -12,8 +12,9 @@ export function Navbar() {
   const links = [
     { href: "/", label: "Home" },
     { href: "/collection", label: "Collection" },
-    { href: "/how-it-works", label: "How it Works" },
     { href: "/try-on", label: "Try-On Studio" },
+    { href: "/how-it-works", label: "How it Works" },
+    { href: "/about", label: "About" },
   ] as const;
 
   if (pathname.startsWith("/miskat/admin")) {
