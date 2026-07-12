@@ -487,7 +487,8 @@ export default function AdminAddProductPage() {
                       </button>
                     </div>
                     <p className="mt-2 text-[11px] text-muted-foreground">
-                      Saved categories are stored in the backend and become available in the dropdown.
+                      Saved categories are stored in the backend and become available in the
+                      dropdown.
                     </p>
                   </div>
                 )}
