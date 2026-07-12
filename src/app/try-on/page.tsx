@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle } from "lucide-react";
+import { Upload, ImageIcon, X, Sparkles, Check, AlertCircle, Camera } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -60,6 +60,7 @@ function TryOnContent() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
+  const [showUploadOptions, setShowUploadOptions] = useState(false);
 
   // Restore previously uploaded photo from session
   useEffect(() => {
@@ -246,7 +247,8 @@ function TryOnContent() {
                 />
               </div>
             ) : (
-              <label
+              <div
+                onClick={() => setShowUploadOptions(true)}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragOver(true);
@@ -254,6 +256,7 @@ function TryOnContent() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   setDragOver(false);
                   handleFile(e.dataTransfer.files?.[0]);
                 }}
@@ -279,9 +282,10 @@ function TryOnContent() {
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  onClick={(e) => e.stopPropagation()}
                   onChange={(e) => handleFile(e.target.files?.[0])}
                 />
-              </label>
+              </div>
             )}
 
             <ul className="mt-5 space-y-2">
@@ -581,6 +585,67 @@ function TryOnContent() {
                 );
               })}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {showUploadOptions && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl space-y-4">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-charcoal">Choose Photo Source</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Take a new photo with your camera or select one from your library
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowUploadOptions(false);
+                  if (fileRef.current) {
+                    fileRef.current.setAttribute("capture", "user");
+                    fileRef.current.click();
+                  }
+                }}
+                className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-[#FAF9F6] p-4 text-center transition hover:border-charcoal hover:bg-cream/40"
+              >
+                <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-charcoal">
+                  <Camera className="h-5 w-5" />
+                </span>
+                <span className="text-xs font-semibold text-charcoal uppercase tracking-wider">
+                  Camera
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowUploadOptions(false);
+                  if (fileRef.current) {
+                    fileRef.current.removeAttribute("capture");
+                    fileRef.current.click();
+                  }
+                }}
+                className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-[#FAF9F6] p-4 text-center transition hover:border-charcoal hover:bg-cream/40"
+              >
+                <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-charcoal">
+                  <ImageIcon className="h-5 w-5" />
+                </span>
+                <span className="text-xs font-semibold text-charcoal uppercase tracking-wider">
+                  Gallery
+                </span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowUploadOptions(false)}
+              className="w-full rounded-xl border border-border py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-neutral-50"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
