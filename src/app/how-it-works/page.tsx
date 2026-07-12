@@ -18,6 +18,7 @@ import {
 import howHero from "@/assets/how_hero.png";
 import textileSimulation from "@/assets/textile_simulation.png";
 import photorealisticRendering from "@/assets/photorealistic_rendering.png";
+import { resolveImageSrc } from "@/lib/image";
 
 export default function HowItWorks() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -61,7 +62,7 @@ export default function HowItWorks() {
       <section className="px-5 max-w-7xl mx-auto pb-24">
         <div className="relative rounded-[2rem] overflow-hidden aspect-[16/9] shadow-luxe border border-neutral-200/50 group">
           <img
-            src={howHero.src}
+            src={resolveImageSrc(howHero)}
             alt="AI Fit Studio Digital Fitting Lab"
             className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.02]"
           />
@@ -127,7 +128,7 @@ export default function HowItWorks() {
             </div>
             <div className="flex-1 min-h-[200px] md:min-h-auto relative overflow-hidden">
               <img
-                src={textileSimulation.src}
+                src={resolveImageSrc(textileSimulation)}
                 alt="Textile simulation fabric"
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
@@ -158,7 +159,7 @@ export default function HowItWorks() {
             <div className="flex-1 min-h-[220px] sm:min-h-auto flex items-center justify-center bg-neutral-50/50 p-6">
               <div className="h-40 w-40 rounded-full overflow-hidden border border-neutral-200/65 shadow-soft">
                 <img
-                  src={photorealisticRendering.src}
+                  src={resolveImageSrc(photorealisticRendering)}
                   alt="Render suit mockup"
                   className="w-full h-full object-cover object-center hover:scale-105 transition duration-500"
                 />

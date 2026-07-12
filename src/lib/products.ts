@@ -6,6 +6,7 @@ import p5 from "@/assets/p5.jpg";
 import p6 from "@/assets/p6.jpg";
 import p7 from "@/assets/p7.jpg";
 import p8 from "@/assets/p8.jpg";
+import { resolveImageSrc } from "@/lib/image";
 
 export type Gender = "male" | "female" | "unisex";
 export type Coverage = "upper" | "lower" | "full" | "accessory";
@@ -38,7 +39,7 @@ export const products: Product[] = [
     gender: "male",
     category: "Shirt",
     price: 89,
-    image: p1.src,
+    image: resolveImageSrc(p1),
   },
   {
     id: "p2",
@@ -46,7 +47,7 @@ export const products: Product[] = [
     gender: "male",
     category: "T-Shirt",
     price: 39,
-    image: p2.src,
+    image: resolveImageSrc(p2),
   },
   {
     id: "p3",
@@ -54,7 +55,7 @@ export const products: Product[] = [
     gender: "male",
     category: "Pant",
     price: 129,
-    image: p3.src,
+    image: resolveImageSrc(p3),
   },
   {
     id: "p8",
@@ -62,7 +63,7 @@ export const products: Product[] = [
     gender: "male",
     category: "T-Shirt",
     price: 59,
-    image: p8.src,
+    image: resolveImageSrc(p8),
   },
   {
     id: "p4",
@@ -70,7 +71,7 @@ export const products: Product[] = [
     gender: "female",
     category: "Kurti",
     price: 79,
-    image: p4.src,
+    image: resolveImageSrc(p4),
   },
   {
     id: "p5",
@@ -78,7 +79,7 @@ export const products: Product[] = [
     gender: "female",
     category: "Dress",
     price: 219,
-    image: p5.src,
+    image: resolveImageSrc(p5),
   },
   {
     id: "p6",
@@ -86,7 +87,7 @@ export const products: Product[] = [
     gender: "female",
     category: "Blouse",
     price: 99,
-    image: p6.src,
+    image: resolveImageSrc(p6),
   },
   {
     id: "p7",
@@ -94,6 +95,6 @@ export const products: Product[] = [
     gender: "female",
     category: "Blazer",
     price: 189,
-    image: p7.src,
+    image: resolveImageSrc(p7),
   },
 ];

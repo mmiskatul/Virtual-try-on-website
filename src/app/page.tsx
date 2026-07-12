@@ -12,6 +12,7 @@ import p7 from "@/assets/p7.jpg";
 import stepCapture from "@/assets/step_capture.png";
 import stepFitting from "@/assets/step_fitting.png";
 import stepCuration from "@/assets/step_curation.png";
+import { resolveImageSrc } from "@/lib/image";
 
 interface ApiProduct {
   id: string;
@@ -93,21 +94,21 @@ export default async function Home() {
       category: "CHARCOAL / TAILORED",
       name: "Sculpted Wool Overcoat",
       price: 1250,
-      image: p7.src,
+      image: resolveImageSrc(p7),
     },
     {
       id: "silk-bias-midi-dress",
       category: "CHAMPAGNE / EVENING",
       name: "Silk Bias Midi Dress",
       price: 890,
-      image: p5.src,
+      image: resolveImageSrc(p5),
     },
     {
       id: "pleated-crepe-trousers",
       category: "ESPRESSO / TAILORED",
       name: "Pleated Crepe Trousers",
       price: 450,
-      image: p3.src,
+      image: resolveImageSrc(p3),
     },
   ];
 
@@ -151,7 +152,7 @@ export default async function Home() {
               {/* Main Image Container */}
               <div className="relative overflow-hidden rounded-2xl aspect-[4/5] bg-neutral-200">
                 <img
-                  src={heroImg.src}
+                  src={resolveImageSrc(heroImg)}
                   alt="Virtual try-on preview"
                   className="h-full w-full object-cover object-center"
                 />
@@ -179,9 +180,9 @@ export default async function Home() {
                     {/* Thumbnails */}
                     <div className="flex gap-2 justify-center">
                       {[
-                        { src: p1.src, active: false },
-                        { src: p6.src, active: true },
-                        { src: p3.src, active: false },
+                        { src: resolveImageSrc(p1), active: false },
+                        { src: resolveImageSrc(p6), active: true },
+                        { src: resolveImageSrc(p3), active: false },
                       ].map((thumb, idx) => (
                         <div
                           key={idx}
@@ -260,19 +261,19 @@ export default async function Home() {
               num: "01",
               title: "Digital Capture",
               desc: "Upload a clean, high-resolution front-facing photo. Our vision algorithms instantly build a unique structural body map.",
-              img: stepCapture.src,
+              img: resolveImageSrc(stepCapture),
             },
             {
               num: "02",
               title: "Atelier Curation",
               desc: "Select a luxury silhouette from our digital showroom. Each piece is modeled down to the exact thread weight and weave.",
-              img: stepCuration.src,
+              img: resolveImageSrc(stepCuration),
             },
             {
               num: "03",
               title: "Neural Fitting",
               desc: "Watch our physical simulators compute fabric gravity, volume, and drape for an indistinguishable mirror reflection.",
-              img: stepFitting.src,
+              img: resolveImageSrc(stepFitting),
             },
           ].map((step) => (
             <div key={step.num} className="group space-y-5">

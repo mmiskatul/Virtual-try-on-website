@@ -6,6 +6,7 @@ import { User, Scissors, Sparkles, Mail, MapPin, ChevronDown } from "lucide-reac
 import aboutHero from "@/assets/about_hero.png";
 import aboutAtelier from "@/assets/about_atelier.png";
 import aboutWorkspace from "@/assets/about_workspace.png";
+import { resolveImageSrc } from "@/lib/image";
 
 export default function About() {
   return (
@@ -41,7 +42,7 @@ export default function About() {
           <div className="flex justify-center">
             <div className="overflow-hidden rounded-[2rem] aspect-[4/5] max-w-[460px] w-full border border-neutral-200/50 shadow-soft">
               <img
-                src={aboutHero.src}
+                src={resolveImageSrc(aboutHero)}
                 alt="Structured cream champagne pleated gown"
                 className="w-full h-full object-cover object-center hover:scale-[1.02] transition duration-700"
               />
@@ -60,7 +61,7 @@ export default function About() {
           <div className="flex justify-center order-2 lg:order-1">
             <div className="overflow-hidden rounded-[2rem] aspect-[4/5] max-w-[460px] w-full border border-neutral-200/50 shadow-soft">
               <img
-                src={aboutAtelier.src}
+                src={resolveImageSrc(aboutAtelier)}
                 alt="Mannequin in luxury fashion atelier"
                 className="w-full h-full object-cover object-center hover:scale-[1.02] transition duration-700"
               />
@@ -226,7 +227,7 @@ export default function About() {
       {/* 5. Mid Banner Section */}
       <section className="relative h-[480px] w-full overflow-hidden flex items-center justify-center shadow-soft">
         <img
-          src={aboutWorkspace.src}
+          src={resolveImageSrc(aboutWorkspace)}
           alt="Studio workspace monitor mesh"
           className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.4]"
         />
