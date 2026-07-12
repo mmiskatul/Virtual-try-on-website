@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ImagePlus, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -57,6 +58,7 @@ export default function AdminAddProductPage() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [savingCategory, setSavingCategory] = useState(false);
+  const [showAddCategory, setShowAddCategory] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -214,6 +216,7 @@ export default function AdminAddProductPage() {
       setNewCategoryName("");
       setMessage(`Saved category ${created.label}.`);
       toast.success(`Category “${created.label}” added.`);
+      setShowAddCategory(false);
     } catch (categoryError) {
       setError(categoryError instanceof Error ? categoryError.message : "Could not save category.");
     } finally {
@@ -327,334 +330,368 @@ export default function AdminAddProductPage() {
   }
 
   return (
-    <div className="grid w-full gap-5 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] lg:gap-6 lg:px-8">
-      <div className="rounded-3xl border border-border bg-card p-5 shadow-soft lg:sticky lg:top-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg text-foreground">Product image</h2>
-          {draftReady && (name || description || imageUrl) && (
-            <button
-              type="button"
-              onClick={() => {
-                window.localStorage.removeItem(PRODUCT_DRAFT_KEY);
-                discardingDraftRef.current = true;
-                setDiscardingDraft(true);
-                window.location.reload();
-              }}
-              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:text-charcoal"
-            >
-              Clear draft
-            </button>
-          )}
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="space-y-1.5">
+          <Link
+            href="/admin/products"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground transition hover:text-charcoal"
+          >
+            ← Back to products
+          </Link>
+          <h1 className="font-display text-4xl font-medium text-charcoal">New Product</h1>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Create a new product by uploading an image and filling in details.
+          </p>
         </div>
-        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-cream/40 px-6 py-8 text-center transition hover:border-charcoal/40">
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Uploaded product preview"
-              className="max-h-[460px] w-full rounded-2xl object-contain"
-            />
-          ) : (
-            <>
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-gradient-gold text-charcoal">
-                <ImagePlus className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Upload product image</p>
-                <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, or WebP up to 10MB</p>
-              </div>
-            </>
-          )}
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(event) => handleImageUpload(event.target.files?.[0])}
-          />
-        </label>
-        {uploading && <p className="mt-4 text-xs text-muted-foreground">Uploading image...</p>}
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-3xl border border-border bg-card p-5 shadow-soft"
-      >
-        <h2 className="text-lg text-foreground">Outfit details</h2>
-        <div className="mt-5 grid gap-4">
-          <label className="grid gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Name
-            </span>
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Midnight Chiffon Dress"
-              className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-            />
-          </label>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Gender
-              </span>
-              <select
-                value={gender}
-                onChange={(event) => setGender(event.target.value as Gender)}
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              >
-                {genders.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Category
-              </span>
-              <select
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              >
-                {categoryOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <div className="rounded-2xl border border-dashed border-border bg-cream/30 p-3">
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <input
-                    value={newCategoryName}
-                    onChange={(event) => setNewCategoryName(event.target.value)}
-                    placeholder="Add new category, e.g. Panjabi"
-                    className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCreateCategory}
-                    disabled={savingCategory}
-                    className="rounded-xl bg-charcoal px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {savingCategory ? "Saving..." : "Add category"}
-                  </button>
-                </div>
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  Saved categories are stored in the backend and become available in the dropdown.
-                </p>
-              </div>
-            </label>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Price
-              </span>
-              <input
-                value={price}
-                onChange={(event) => setPrice(event.target.value)}
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="89"
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              />
-            </label>
-          </div>
-
-          <label className="grid gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Description
-            </span>
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Describe the garment, fabric, and fit."
-              rows={5}
-              className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-            />
-          </label>
-
-          <div className="grid gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Available Sizes
-            </span>
-            <div className="flex flex-wrap gap-2.5 mt-1">
-              {["XS", "S", "M", "L", "XL", "XXL"].map((size) => {
-                const checked = availableSizes.includes(size);
-                return (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => {
-                      setAvailableSizes((prev) =>
-                        prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
-                      );
-                    }}
-                    className={`h-11 px-5 rounded-xl border text-xs font-bold uppercase transition flex items-center justify-center ${
-                      checked
-                        ? "bg-charcoal border-charcoal text-white shadow-sm"
-                        : "border-border bg-background text-foreground hover:border-charcoal"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <label className="grid gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Sizing Specifications / Details
-            </span>
-            <textarea
-              value={sizeDetails}
-              onChange={(event) => setSizeDetails(event.target.value)}
-              placeholder="e.g., XS: chest 34, length 26 | S: chest 36, length 27 | M: chest 38, length 28"
-              rows={3}
-              className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-            />
-          </label>
-
-          <label className="grid gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Materials
-            </span>
-            <input
-              type="text"
-              value={materials}
-              onChange={(event) => setMaterials(event.target.value)}
-              placeholder="e.g. 100% Organic Silk Crepe de Chine"
-              className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-            />
-          </label>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Coverage
-              </span>
-              <select
-                value={coverage}
-                onChange={(event) => setCoverage(event.target.value)}
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              >
-                <option value="upper">Upper Body</option>
-                <option value="lower">Lower Body</option>
-                <option value="full">Full Body</option>
-                <option value="accessory">Accessory</option>
-              </select>
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Fit Type
-              </span>
-              <input
-                type="text"
-                value={fitType}
-                onChange={(event) => setFitType(event.target.value)}
-                placeholder="e.g. Slim, Regular, Relaxed"
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Fabric / Cloth Type
-              </span>
-              <input
-                type="text"
-                value={clothType}
-                onChange={(event) => setClothType(event.target.value)}
-                placeholder="e.g. Linen, Cotton, Chiffon"
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Color
-              </span>
-              <input
-                type="text"
-                value={color}
-                onChange={(event) => setColor(event.target.value)}
-                placeholder="e.g. Midnight Black, Ivory White"
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Occasion
-              </span>
-              <input
-                type="text"
-                value={occasion}
-                onChange={(event) => setOccasion(event.target.value)}
-                placeholder="e.g. Casual, Evening wear"
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Brand
-              </span>
-              <input
-                type="text"
-                value={brand}
-                onChange={(event) => setBrand(event.target.value)}
-                placeholder="e.g. Atelier, Levi's"
-                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-              />
-            </label>
-          </div>
-
-          <label className="grid gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Care Instructions
-            </span>
-            <textarea
-              value={careInstructions}
-              onChange={(event) => setCareInstructions(event.target.value)}
-              placeholder="e.g. Dry clean recommended. Wash cold."
-              rows={3}
-              className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-            />
-          </label>
-
-          {message && (
-            <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-              {message}
-            </p>
-          )}
-          {error && (
-            <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </p>
-          )}
-
+        <div className="flex items-center gap-3">
           <button
             type="submit"
+            form="add-product-form"
             disabled={saving}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#806B4D] disabled:opacity-50"
           >
-            <Save className="h-4 w-4" />
+            <Save className="h-3.5 w-3.5" />
             {saving ? "Saving..." : "Save product"}
           </button>
         </div>
-      </form>
+      </div>
+
+      <div className="grid w-full gap-5 lg:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)] lg:gap-6">
+        {/* Left Column: Image Card */}
+        <div className="rounded-3xl border border-border bg-card p-5 shadow-soft lg:sticky lg:top-4 h-fit">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg text-foreground">Product image</h2>
+            {draftReady && (name || description || imageUrl) && (
+              <button
+                type="button"
+                onClick={() => {
+                  window.localStorage.removeItem(PRODUCT_DRAFT_KEY);
+                  discardingDraftRef.current = true;
+                  setDiscardingDraft(true);
+                  window.location.reload();
+                }}
+                className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:text-charcoal"
+              >
+                Clear draft
+              </button>
+            )}
+          </div>
+          <label className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-cream/40 px-6 py-8 text-center transition hover:border-charcoal/40">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Uploaded product preview"
+                className="max-h-[460px] w-full rounded-2xl object-contain"
+              />
+            ) : (
+              <>
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-gradient-gold text-charcoal">
+                  <ImagePlus className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Upload product image</p>
+                  <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, or WebP up to 10MB</p>
+                </div>
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(event) => handleImageUpload(event.target.files?.[0])}
+            />
+          </label>
+          {uploading && <p className="mt-4 text-xs text-muted-foreground">Uploading image...</p>}
+        </div>
+
+        {/* Right Column: Form Card */}
+        <form
+          id="add-product-form"
+          onSubmit={handleSubmit}
+          className="rounded-3xl border border-border bg-card p-5 shadow-soft"
+        >
+          <h2 className="text-lg text-foreground">Outfit details</h2>
+          <div className="mt-5 grid gap-4">
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Name
+              </span>
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Midnight Chiffon Dress"
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Gender
+                </span>
+                <select
+                  value={gender}
+                  onChange={(event) => setGender(event.target.value as Gender)}
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                >
+                  {genders.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Category
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCategory(!showAddCategory)}
+                    className="text-xs font-semibold text-charcoal hover:underline"
+                  >
+                    {showAddCategory ? "Cancel" : "+ Add New Category"}
+                  </button>
+                </div>
+                <select
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                >
+                  {categoryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {showAddCategory && (
+                  <div className="rounded-2xl border border-dashed border-border bg-cream/30 p-3">
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <input
+                        value={newCategoryName}
+                        onChange={(event) => setNewCategoryName(event.target.value)}
+                        placeholder="Add new category, e.g. Panjabi"
+                        className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCreateCategory}
+                        disabled={savingCategory}
+                        className="rounded-xl bg-charcoal px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {savingCategory ? "Saving..." : "Add category"}
+                      </button>
+                    </div>
+                    <p className="mt-2 text-[11px] text-muted-foreground">
+                      Saved categories are stored in the backend and become available in the dropdown.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Price
+                </span>
+                <input
+                  value={price}
+                  onChange={(event) => setPrice(event.target.value)}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="89"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Description
+              </span>
+              <textarea
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="Describe the garment, fabric, and fit."
+                rows={5}
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            <div className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Available Sizes
+              </span>
+              <div className="flex flex-wrap gap-2.5 mt-1">
+                {["XS", "S", "M", "L", "XL", "XXL"].map((size) => {
+                  const checked = availableSizes.includes(size);
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        setAvailableSizes((prev) =>
+                          prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
+                        );
+                      }}
+                      className={`h-11 px-5 rounded-xl border text-xs font-bold uppercase transition flex items-center justify-center ${
+                        checked
+                          ? "bg-charcoal border-charcoal text-white shadow-sm"
+                          : "border-border bg-background text-foreground hover:border-charcoal"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Sizing Specifications / Details
+              </span>
+              <textarea
+                value={sizeDetails}
+                onChange={(event) => setSizeDetails(event.target.value)}
+                placeholder="e.g., XS: chest 34, length 26 | S: chest 36, length 27 | M: chest 38, length 28"
+                rows={3}
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Materials
+              </span>
+              <input
+                type="text"
+                value={materials}
+                onChange={(event) => setMaterials(event.target.value)}
+                placeholder="e.g. 100% Organic Silk Crepe de Chine"
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Coverage
+                </span>
+                <select
+                  value={coverage}
+                  onChange={(event) => setCoverage(event.target.value)}
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                >
+                  <option value="upper">Upper Body</option>
+                  <option value="lower">Lower Body</option>
+                  <option value="full">Full Body</option>
+                  <option value="accessory">Accessory</option>
+                </select>
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Fit Type
+                </span>
+                <input
+                  type="text"
+                  value={fitType}
+                  onChange={(event) => setFitType(event.target.value)}
+                  placeholder="e.g. Slim, Regular, Relaxed"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Fabric / Cloth Type
+                </span>
+                <input
+                  type="text"
+                  value={clothType}
+                  onChange={(event) => setClothType(event.target.value)}
+                  placeholder="e.g. Linen, Cotton, Chiffon"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Color
+                </span>
+                <input
+                  type="text"
+                  value={color}
+                  onChange={(event) => setColor(event.target.value)}
+                  placeholder="e.g. Midnight Black, Ivory White"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Occasion
+                </span>
+                <input
+                  type="text"
+                  value={occasion}
+                  onChange={(event) => setOccasion(event.target.value)}
+                  placeholder="e.g. Casual, Evening wear"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Brand
+                </span>
+                <input
+                  type="text"
+                  value={brand}
+                  onChange={(event) => setBrand(event.target.value)}
+                  placeholder="e.g. Atelier, Levi's"
+                  className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                />
+              </label>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Care Instructions
+              </span>
+              <textarea
+                value={careInstructions}
+                onChange={(event) => setCareInstructions(event.target.value)}
+                placeholder="e.g. Dry clean recommended. Wash cold."
+                rows={3}
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+              />
+            </label>
+
+            {message && (
+              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {message}
+              </p>
+            )}
+            {error && (
+              <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </p>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -59,6 +59,7 @@ export default function AdminProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [savingCategory, setSavingCategory] = useState(false);
+  const [showAddCategory, setShowAddCategory] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -160,6 +161,7 @@ export default function AdminProductDetailPage() {
       setNewCategoryName("");
       setMessage(`Saved category ${created.label}.`);
       toast.success(`Category “${created.label}” added.`);
+      setShowAddCategory(false);
     } catch (categoryError) {
       setError(categoryError instanceof Error ? categoryError.message : "Could not save category.");
     } finally {
@@ -266,23 +268,62 @@ export default function AdminProductDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <Link
-        href="/admin/products"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to products
-      </Link>
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="space-y-1.5">
+          <Link
+            href="/admin/products"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground transition hover:text-charcoal"
+          >
+            ← Back to products
+          </Link>
+          <h1 className="font-display text-4xl font-medium text-charcoal">
+            {loading ? "Loading..." : name || "Product Details"}
+          </h1>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Edit product details, pricing, categories, and attributes.
+          </p>
+        </div>
+        {!loading && (
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={`/admin/try-on?product=${productId}`}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-charcoal hover:border-charcoal hover:bg-neutral-50"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Virtual Try-On
+            </Link>
+            <button
+              type="submit"
+              form="edit-product-form"
+              disabled={saving || loading}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#806B4D] disabled:opacity-50"
+            >
+              <Save className="h-3.5 w-3.5" />
+              {saving ? "Saving..." : "Save changes"}
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={removing || loading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {removing ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        )}
+      </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+      <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        {/* Left Column: Preview */}
+        <section className="rounded-3xl border border-border bg-card p-6 shadow-soft h-fit">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Preview</p>
-              <h1 className="mt-1 text-xl font-semibold text-foreground">
+              <h2 className="mt-1 text-xl font-semibold text-foreground">
                 {loading ? <Skeleton className="h-6 w-48" /> : name || "Product"}
-              </h1>
+              </h2>
             </div>
             {productId && (
               <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
@@ -321,6 +362,7 @@ export default function AdminProductDetailPage() {
           </div>
         </section>
 
+        {/* Right Column: Form */}
         <section className="rounded-3xl border border-border bg-card p-6 shadow-soft">
           {loading ? (
             <div className="space-y-6">
@@ -337,7 +379,7 @@ export default function AdminProductDetailPage() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSave} className="grid gap-5">
+            <form id="edit-product-form" onSubmit={handleSave} className="grid gap-5">
               <label className="grid gap-2">
                 <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Name
@@ -367,10 +409,19 @@ export default function AdminProductDetailPage() {
                   </select>
                 </label>
 
-                <label className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Category
-                  </span>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Category
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCategory(!showAddCategory)}
+                      className="text-xs font-semibold text-charcoal hover:underline"
+                    >
+                      {showAddCategory ? "Cancel" : "+ Add New Category"}
+                    </button>
+                  </div>
                   <select
                     value={category}
                     onChange={(event) => setCategory(event.target.value)}
@@ -382,29 +433,30 @@ export default function AdminProductDetailPage() {
                       </option>
                     ))}
                   </select>
-                  <div className="rounded-2xl border border-dashed border-border bg-cream/30 p-3">
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <input
-                        value={newCategoryName}
-                        onChange={(event) => setNewCategoryName(event.target.value)}
-                        placeholder="Add new category, e.g. Panjabi"
-                        className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleCreateCategory}
-                        disabled={savingCategory}
-                        className="rounded-xl bg-charcoal px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {savingCategory ? "Saving..." : "Add category"}
-                      </button>
+                  {showAddCategory && (
+                    <div className="rounded-2xl border border-dashed border-border bg-cream/30 p-3">
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <input
+                          value={newCategoryName}
+                          onChange={(event) => setNewCategoryName(event.target.value)}
+                          placeholder="Add new category, e.g. Panjabi"
+                          className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-charcoal"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCreateCategory}
+                          disabled={savingCategory}
+                          className="rounded-xl bg-charcoal px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {savingCategory ? "Saving..." : "Add category"}
+                        </button>
+                      </div>
+                      <p className="mt-2 text-[11px] text-muted-foreground">
+                        Saved categories are stored in the backend and become available in the dropdown.
+                      </p>
                     </div>
-                    <p className="mt-2 text-[11px] text-muted-foreground">
-                      Saved categories are stored in the backend and become available in the
-                      dropdown.
-                    </p>
-                  </div>
-                </label>
+                  )}
+                </div>
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
@@ -624,32 +676,6 @@ export default function AdminProductDetailPage() {
                   {error}
                 </p>
               )}
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="submit"
-                  disabled={saving || loading}
-                  className="inline-flex items-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Save className="h-4 w-4" />
-                  {saving ? "Saving..." : "Save changes"}
-                </button>
-                <Link
-                  href={`/admin/try-on?product=${productId}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:border-charcoal"
-                >
-                  <Sparkles className="h-4 w-4" /> Virtual Try-On
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={removing || loading}
-                  className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {removing ? "Deleting..." : "Delete"}
-                </button>
-              </div>
             </form>
           )}
         </section>
