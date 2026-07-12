@@ -59,6 +59,7 @@ export function ProductCard({
         </div>
         {!isSelect && (
           <Link
+            prefetch={false}
             href={`${tryOnHrefBase}?product=${product.id}`}
             className="mt-2 flex w-full items-center justify-center rounded-full bg-charcoal px-4 py-2.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
           >

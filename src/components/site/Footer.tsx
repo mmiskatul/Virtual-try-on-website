@@ -81,22 +81,22 @@ export function Footer() {
           </h4>
           <ul className="space-y-2 text-xs font-medium text-muted-foreground">
             <li>
-              <Link href="/collection" className="hover:text-charcoal transition">
+              <Link prefetch={false} href="/collection" className="hover:text-charcoal transition">
                 New Arrivals
               </Link>
             </li>
             <li>
-              <Link href="/collection" className="hover:text-charcoal transition">
+              <Link prefetch={false} href="/collection" className="hover:text-charcoal transition">
                 Ready-to-Wear
               </Link>
             </li>
             <li>
-              <Link href="/collection" className="hover:text-charcoal transition">
+              <Link prefetch={false} href="/collection" className="hover:text-charcoal transition">
                 Accessories
               </Link>
             </li>
             <li>
-              <Link href="/collection" className="hover:text-charcoal transition">
+              <Link prefetch={false} href="/collection" className="hover:text-charcoal transition">
                 Editorial
               </Link>
             </li>
